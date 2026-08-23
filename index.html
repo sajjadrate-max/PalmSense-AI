@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>کف بینی — AI Palm Reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0d1220;
+    --bg-panel:#141b2c;
+    --bg-panel-2:#1a2338;
+    --gold:#c9a769;
+    --gold-bright:#e8c887;
+    --ink:#efe9da;
+    --ink-dim:#b9b3a4;
+    --muted:#8892a8;
+    --line:rgba(201,167,105,0.18);
+    --heart:#d9736c;
+    --head:#5b9bd9;
+    --life:#6cbf6c;
+    --fate:#e0c341;
+    --danger:#e07a6b;
+    --ok:#7fbf8f;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,167,105,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(91,155,217,0.08), transparent 55%),
+      var(--bg-deep);
+    color:var(--ink);
+    font-family:'Noto Nastaliq Urdu','Inter',sans-serif;
+    line-height:1.9;
+    min-height:100vh;
+  }
+  body.lang-en{
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+  }
+  [dir="ltr"] body, body[dir="ltr"]{font-family:'Inter',sans-serif;}
+  h1,h2,h3,.display{
+    font-family:'Cinzel','Noto Nastaliq Urdu',serif;
+    color:var(--gold-bright);
+    letter-spacing:0.3px;
+    font-weight:600;
+  }
+  body.lang-en h1, body.lang-en h2, body.lang-en h3, body.lang-en .display{
+    font-family:'Cinzel',serif;
+  }
+  a{color:var(--gold-bright);}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px 60px;}
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px;max-width:920px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:50%;
+    border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold-bright);font-size:16px;
+  }
+  .brand-name{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-bright);}
+  .lang-toggle{
+    display:flex;background:var(--bg-panel);border:1px solid var(--line);
+    border-radius:999px;overflow:hidden;
+  }
+  .lang-toggle button{
+    background:transparent;border:none;color:var(--muted);
+    padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .lang-toggle button.active{background:var(--gold);color:#1a1305;font-weight:600;}
+
+  /* HERO */
+  .hero{padding:26px 0 10px;text-align:center;position:relative;}
+  .hero .eyebrow{
+    color:var(--gold);font-size:12.5px;letter-spacing:2px;text-transform:uppercase;
+    font-family:'Inter',sans-serif;margin-bottom:10px;
+  }
+  .hero h1{font-size:clamp(26px,6vw,38px);margin:0 0 12px;}
+  .hero p.lead{color:var(--ink-dim);max-width:560px;margin:0 auto 22px;font-size:15.5px;}
+  .hand-svg-wrap{display:flex;justify-content:center;margin:8px auto 6px;}
+  .hand-svg-wrap svg{width:150px;height:auto;filter:drop-shadow(0 6px 18px rgba(201,167,105,0.25));}
+  .hand-line{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:300;stroke-dashoffset:300;animation:draw 2.4s ease forwards;}
+  .hand-outline{fill:rgba(239,233,218,0.04);stroke:rgba(239,233,218,0.35);stroke-width:1.4;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  @media (prefers-reduced-motion: reduce){
+    .hand-line{animation:none;stroke-dashoffset:0;}
+  }
+
+  /* CARD / PANEL */
+  .panel{
+    background:linear-gradient(180deg,var(--bg-panel),var(--bg-panel-2));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow);
+  }
+  .panel h2{font-size:18px;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .panel h2 .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);
+    color:var(--gold-bright);font-size:13px;font-family:'Inter',sans-serif;flex-shrink:0;
+  }
+
+  /* STEP: hand select */
+  .hand-select{display:flex;gap:12px;}
+  .hand-opt{
+    flex:1;background:var(--bg-deep);border:1.5px solid var(--line);
+    border-radius:12px;padding:16px 10px;text-align:center;cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .hand-opt.selected{border-color:var(--gold);background:rgba(201,167,105,0.08);}
+  .hand-opt .emoji{font-size:26px;display:block;margin-bottom:6px;}
+  .hand-opt .lbl{font-size:14px;color:var(--ink);}
+
+  /* UPLOAD */
+  .upload-zone{
+    border:1.5px dashed var(--line);border-radius:12px;
+    padding:28px 16px;text-align:center;cursor:pointer;
+    background:rgba(255,255,255,0.015);
+    transition:border-color .15s;
+  }
+  .upload-zone:hover{border-color:var(--gold);}
+  .upload-zone .icon{font-size:30px;margin-bottom:8px;display:block;}
+  .upload-zone .hint{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .upload-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  input[type=file]{display:none;}
+
+  .btn{
+    border:none;border-radius:999px;padding:12px 22px;font-size:14.5px;
+    cursor:pointer;font-family:inherit;font-weight:600;
+    transition:transform .1s, opacity .15s;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-gold{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1305;}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
+  .btn-outline:hover{border-color:var(--gold);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-block{width:100%;}
+  .btn-sm{padding:8px 14px;font-size:13px;}
+
+  .preview-wrap{position:relative;margin-top:16px;border-radius:12px;overflow:hidden;background:#000;}
+  .preview-wrap img, .preview-wrap canvas{display:block;width:100%;height:auto;}
+  .preview-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+  .remove-img{
+    position:absolute;top:8px;inset-inline-end:8px;background:rgba(13,18,32,0.75);
+    color:var(--ink);border:1px solid var(--line);border-radius:50%;
+    width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:15px;
+  }
+
+  /* LOADING */
+  .loading-box{text-align:center;padding:38px 10px;}
+  .spinner{
+    width:46px;height:46px;border-radius:50%;
+    border:3px solid rgba(201,167,105,0.2);border-top-color:var(--gold);
+    margin:0 auto 16px;animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-box p{color:var(--ink-dim);font-size:14px;}
+
+  /* ALERT */
+  .alert{
+    border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:14px;
+    border:1px solid; display:flex;gap:10px;align-items:flex-start;
+  }
+  .alert-warn{background:rgba(224,122,107,0.08);border-color:rgba(224,122,107,0.4);color:#f0c7bf;}
+  .alert-info{background:rgba(91,155,217,0.08);border-color:rgba(91,155,217,0.4);color:#cfe1f4;}
+  .alert .ic{font-size:18px;flex-shrink:0;}
+
+  /* RESULT CARDS */
+  .conf-badge{
+    display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;
+    font-family:'Inter',sans-serif;letter-spacing:0.3px;margin-inline-start:6px;
+    border:1px solid;
+  }
+  .conf-High{color:#9fe0a8;border-color:#9fe0a8;background:rgba(159,224,168,0.08);}
+  .conf-Medium{color:#e8d18a;border-color:#e8d18a;background:rgba(232,209,138,0.08);}
+  .conf-Low{color:#e0b08a;border-color:#e0b08a;background:rgba(224,176,138,0.08);}
+  .conf-Not-visible, .conf-NotVisible{color:#9aa3b8;border-color:#9aa3b8;background:rgba(154,163,184,0.08);}
+
+  .line-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px;vertical-align:middle;}
+  .dot-heart{background:var(--heart);}
+  .dot-head{background:var(--head);}
+  .dot-life{background:var(--life);}
+  .dot-fate{background:var(--fate);}
+
+  .subcard{
+    background:rgba(255,255,255,0.02);border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;margin-bottom:10px;
+  }
+  .subcard:last-child{margin-bottom:0;}
+  .subcard .row-title{font-weight:700;color:var(--ink);font-size:14.5px;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+  .subcard p{margin:4px 0;font-size:14px;color:var(--ink-dim);}
+  .subcard .k{color:var(--gold-bright);}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:520px){.grid-2{grid-template-columns:1fr;}}
+
+  .result-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0;}
+
+  .disclaimer-box{
+    background:rgba(224,122,107,0.06);border:1px solid rgba(224,122,107,0.3);
+    border-radius:12px;padding:16px;font-size:13.5px;color:#f0d9d3;line-height:1.9;
+  }
+
+  details.learn{
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;
+    background:rgba(255,255,255,0.015);
+  }
+  details.learn summary{cursor:pointer;font-weight:700;color:var(--ink);font-size:14.5px;list-style:none;display:flex;align-items:center;justify-content:space-between;}
+  details.learn summary::-webkit-details-marker{display:none;}
+  details.learn summary::after{content:'+';color:var(--gold-bright);font-size:18px;}
+  details.learn[open] summary::after{content:'−';}
+  details.learn p{color:var(--ink-dim);font-size:13.5px;margin-top:8px;}
+
+  footer.site-footer{
+    text-align:center;color:var(--muted);font-size:12.5px;padding:24px 18px;
+    border-top:1px solid var(--line);margin-top:20px;
+  }
+
+  .privacy-note{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
+
+  .hidden{display:none !important;}
+
+  .tabbar{display:flex;gap:8px;margin:22px auto 12px;max-width:920px;padding:0 18px;}
+  .tabbtn{
+    flex:1;background:var(--bg-panel);border:1px solid var(--line);color:var(--ink-dim);
+    padding:11px 8px;border-radius:10px;font-size:13.5px;cursor:pointer;font-family:inherit;
+  }
+  .tabbtn.active{border-color:var(--gold);color:var(--gold-bright);background:rgba(201,167,105,0.08);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark">✋</div>
+    <div class="brand-name" data-i="brandName">کف بینی</div>
+  </div>
+  <div class="lang-toggle">
+    <button id="btnUr" class="active" onclick="setLang('ur')">اردو</button>
+    <button id="btnEn" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<section class="hero wrap">
+  <div class="eyebrow" data-i="eyebrow">TRADITIONAL PALMISTRY · AI ASSISTED</div>
+  <h1 data-i="heroTitle">اپنے ہاتھ کی کہانی جانیے</h1>
+  <p class="lead" data-i="heroLead">اپنی ہتھیلی کی صاف تصویر اپلوڈ کریں اور روایتی علمِ کف شناسی کے مطابق تفصیلی، خوبصورت انداز میں تجزیہ حاصل کریں۔ یہ محض روایتی و تفریحی تشریح ہے، سائنسی پیش گوئی نہیں۔</p>
+  <div class="hand-svg-wrap">
+    <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+      <path class="hand-outline" d="M70 230 C55 220 50 190 52 160 L48 90 C47 82 55 78 60 85 L65 120 L65 55 C65 47 74 44 78 52 L82 118 L82 40 C82 32 92 30 95 38 L98 120 L100 45 C100 37 110 36 112 45 L114 122 C120 100 132 92 138 100 C144 108 140 130 132 150 L128 190 C126 210 112 228 95 232 Z"/>
+      <path class="hand-line" d="M60 150 C75 145 90 148 100 158" stroke="#d9736c"/>
+      <path class="hand-line" d="M58 130 C78 128 96 132 112 128" stroke="#5b9bd9" style="animation-delay:.2s"/>
+      <path class="hand-line" d="M75 200 C68 175 68 150 78 128" stroke="#6cbf6c" style="animation-delay:.4s"/>
+      <path class="hand-line" d="M95 210 L92 130" stroke="#e0c341" style="animation-delay:.6s"/>
+    </svg>
+  </div>
+</section>
+
+<div class="tabbar">
+  <button class="tabbtn active" id="tabReading" onclick="showTab('reading')" data-i="tabReading">کف بینی کروائیں</button>
+  <button class="tabbtn" id="tabLearn" onclick="showTab('learn')" data-i="tabLearn">علمِ کف شناسی سیکھیں</button>
+</div>
+
+<main class="wrap">
+
+  <!-- ============ READING TAB ============ -->
+  <div id="viewReading">
+
+    <div class="panel" id="stepHand">
+      <h2><span class="num">1</span><span data-i="step1Title">ہاتھ منتخب کریں</span></h2>
+      <div class="hand-select">
+        <div class="hand-opt selected" id="optRight" onclick="selectHand('right')">
+          <span class="emoji">🖐️</span>
+          <span class="lbl" data-i="rightHand">دایاں ہاتھ</span>
+        </div>
+        <div class="hand-opt" id="optLeft" onclick="selectHand('left')">
+          <span class="emoji">🤚</span>
+          <span class="lbl" data-i="leftHand">بایاں ہاتھ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="stepUpload">
+      <h2><span class="num">2</span><span data-i="step2Title">ہتھیلی کی تصویر دیں</span></h2>
+
+      <div id="uploadZoneBox">
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <span class="icon">📷</span>
+          <div data-i="uploadHint1">تصویر منتخب کرنے کے لیے یہاں دبائیں</div>
+          <div class="hint" data-i="uploadHint2">صاف روشنی میں، پوری ہتھیلی نظر آنی چاہیے</div>
+        </div>
+        <div class="upload-actions">
+          <button class="btn btn-outline btn-block" onclick="document.getElementById('cameraInput').click()">
+            <span>📸</span><span data-i="takePhoto">کیمرے سے تصویر لیں</span>
+          </button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFile(event)">
+      </div>
+
+      <div id="previewBox" class="hidden">
+        <div class="preview-wrap" id="previewWrap">
+          <img id="previewImg" src="" alt="palm preview">
+          <canvas id="annCanvas"></canvas>
+          <div class="remove-img" onclick="resetImage()">✕</div>
+        </div>
+        <div class="privacy-note" data-i="privacyNote">آپ کی تصویر صرف اس تجزیے کے لیے استعمال ہوگی اور مستقل طور پر سرور پر محفوظ نہیں کی جاتی۔</div>
+      </div>
+    </div>
+
+    <div class="panel" id="stepAnalyze">
+      <h2><span class="num">3</span><span data-i="step3Title">تجزیہ کروائیں</span></h2>
+      <button class="btn btn-gold btn-block" id="analyzeBtn" onclick="analyzePalm()" disabled>
+        <span>🔮</span><span data-i="analyzeBtnLbl">Palm Analyze کریں</span>
+      </button>
+    </div>
+
+    <div class="panel hidden" id="loadingPanel">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p data-i="loadingText">آپ کی ہتھیلی کا تجزیہ کیا جا رہا ہے… یہ چند لمحے لے سکتا ہے</p>
+      </div>
+    </div>
+
+    <div id="errorBox"></div>
+
+    <div id="resultsBox"></div>
+
+  </div>
+
+  <!-- ============ LEARN TAB ============ -->
+  <div id="viewLearn" class="hidden">
+    <div class="panel">
+      <h2>🖐️ <span data-i="learnLinesTitle">اہم لکیریں</span></h2>
+
+      <details class="learn" open>
+        <summary><span class="line-dot dot-heart"></span><span data-i="heartLineName">Heart Line — لکیرِ دل</span></summary>
+        <p data-i="heartLineDesc">یہ لکیر ہتھیلی کے اوپری حصے میں، انگلیوں کے بالکل نیچے، چھنگلیا کی طرف سے شروع ہو کر شہادت کی انگلی کی طرف جاتی ہے۔ روایتی طور پر یہ جذبات، محبت اور تعلقات کی نوعیت ظاہر کرتی ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary><span class="line-dot dot-head"></span><span data-i="headLineName">Head Line — لکیرِ دماغ</span></summary>
+        <p data-i="headLineDesc">یہ لکیر ہتھیلی کے وسط میں، انگوٹھے اور شہادت کی انگلی کے درمیان سے شروع ہو کر ہتھیلی کے دوسری طرف جاتی ہے۔ روایتی طور پر یہ سوچ، فیصلہ سازی اور ذہنی رجحان کی عکاسی کرتی ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary><span class="line-dot dot-life"></span><span data-i="lifeLineName">Life Line — لکیرِ حیات</span></summary>
+        <p data-i="lifeLineDesc">یہ لکیر انگوٹھے کے گرد، کلائی کی طرف مڑتی ہوئی نظر آتی ہے۔ روایتی طور پر اسے توانائی، جسمانی رجحان اور زندگی کے اتار چڑھاؤ سے جوڑا جاتا ہے — یہ عمر کی پیشگوئی نہیں کرتی۔</p>
+      </details>
+      <details class="learn">
+        <summary><span class="line-dot dot-fate"></span><span data-i="fateLineName">Fate Line — لکیرِ مقدر</span></summary>
+        <p data-i="fateLineDesc">یہ لکیر عموماً کلائی سے شروع ہو کر ہتھیلی کے وسط سے گزرتے ہوئے درمیانی انگلی کی طرف جاتی ہے۔ ہر ہاتھ پر یہ واضح نہیں ہوتی۔ روایتی طور پر اسے کیریئر اور زندگی کی سمت سے جوڑا جاتا ہے۔</p>
+      </details>
+    </div>
+
+    <div class="panel">
+      <h2>⛰️ <span data-i="learnMountsTitle">سات Mounts (ابھار)</span></h2>
+      <details class="learn">
+        <summary data-i="mountJupiterName">Mount of Jupiter</summary>
+        <p data-i="mountJupiterDesc">شہادت کی انگلی کے نیچے واقع ہے۔ روایتی طور پر قائدانہ صلاحیت اور خود اعتمادی سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountSaturnName">Mount of Saturn</summary>
+        <p data-i="mountSaturnDesc">درمیانی انگلی کے نیچے واقع ہے۔ روایتی طور پر سنجیدگی اور ذمہ داری سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountApolloName">Mount of Apollo / Sun</summary>
+        <p data-i="mountApolloDesc">انگوٹھی والی انگلی کے نیچے واقع ہے۔ روایتی طور پر تخلیقی صلاحیت اور شہرت کے رجحان سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountMercuryName">Mount of Mercury</summary>
+        <p data-i="mountMercuryDesc">چھنگلیا کے نیچے واقع ہے۔ روایتی طور پر بات چیت اور کاروباری ذہانت سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountVenusName">Mount of Venus</summary>
+        <p data-i="mountVenusDesc">انگوٹھے کی جڑ کے گرد، Life Line کے اندر واقع ہے۔ روایتی طور پر محبت، گرمجوشی اور خاندانی لگاؤ سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountMoonName">Mount of Moon / Luna</summary>
+        <p data-i="mountMoonDesc">ہتھیلی کے نچلے، کلائی کے قریب والے حصے میں، چھنگلیا کی سمت واقع ہے۔ روایتی طور پر تخیل اور حساسیت سے منسلک۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="mountMarsName">Upper &amp; Lower Mars, Plain of Mars</summary>
+        <p data-i="mountMarsDesc">ہتھیلی کے کناروں اور وسط میں واقع چھوٹے ابھار۔ روایتی طور پر ہمت، برداشت اور مزاحمت کی صلاحیت سے منسلک۔</p>
+      </details>
+    </div>
+
+    <div class="panel">
+      <h2>✌️ <span data-i="learnFingersTitle">انگلیوں کے روایتی معنی</span></h2>
+      <details class="learn">
+        <summary data-i="fingerThumbName">انگوٹھا (Thumb)</summary>
+        <p data-i="fingerThumbDesc">قوتِ ارادی اور منطق کی علامت سمجھا جاتا ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="fingerIndexName">شہادت کی انگلی (Jupiter)</summary>
+        <p data-i="fingerIndexDesc">قیادت، عزائم اور خود اعتمادی سے جوڑی جاتی ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="fingerMiddleName">درمیانی انگلی (Saturn)</summary>
+        <p data-i="fingerMiddleDesc">ذمہ داری، نظم و ضبط اور سنجیدگی سے جوڑی جاتی ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="fingerRingName">انگوٹھی والی انگلی (Apollo/Sun)</summary>
+        <p data-i="fingerRingDesc">تخلیقی صلاحیت، فن اور اظہار سے جوڑی جاتی ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="fingerLittleName">چھنگلیا (Mercury)</summary>
+        <p data-i="fingerLittleDesc">بات چیت، ذہانت اور کاروباری سوجھ بوجھ سے جوڑی جاتی ہے۔</p>
+      </details>
+    </div>
+
+    <div class="panel">
+      <h2>✳️ <span data-i="learnMarksTitle">خاص نشانات کے روایتی معنی</span></h2>
+      <details class="learn">
+        <summary data-i="markStarName">★ Star</summary>
+        <p data-i="markStarDesc">روایتی طور پر اچانک، نمایاں اثر کی علامت سمجھا جاتا ہے، مثبت یا منفی — سیاق پر منحصر۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="markIslandName">Island</summary>
+        <p data-i="markIslandDesc">روایتی طور پر کسی دور یا مرحلے میں الجھن یا کمزوری کی علامت سمجھا جاتا ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="markCrossName">✕ Cross</summary>
+        <p data-i="markCrossDesc">روایتی طور پر رکاوٹ یا اہم موڑ کی علامت سمجھا جاتا ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="markSquareName">□ Square</summary>
+        <p data-i="markSquareDesc">روایتی طور پر حفاظت یا کسی مشکل وقت سے محفوظ نکلنے کی علامت سمجھا جاتا ہے۔</p>
+      </details>
+      <details class="learn">
+        <summary data-i="markTriangleName">△ Triangle</summary>
+        <p data-i="markTriangleDesc">روایتی طور پر عقل اور مہارت کی علامت سمجھا جاتا ہے۔</p>
+      </details>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div data-i="footerText">یہ ویب ایپ صرف روایتی و تفریحی مقاصد کے لیے ہے۔ یہ طبی تشخیص یا سائنسی پیش گوئی نہیں کرتی۔</div>
+</footer>
+
+<script>
+/* ============================================================
+   TRANSLATIONS
+   ============================================================ */
+const I18N = {
+  ur: {
+    brandName:"کف بینی", eyebrow:"روایتی کف بینی · AI کی مدد سے",
+    heroTitle:"اپنے ہاتھ کی کہانی جانیے",
+    heroLead:"اپنی ہتھیلی کی صاف تصویر اپلوڈ کریں اور روایتی علمِ کف شناسی کے مطابق تفصیلی، خوبصورت انداز میں تجزیہ حاصل کریں۔ یہ محض روایتی و تفریحی تشریح ہے، سائنسی پیش گوئی نہیں۔",
+    tabReading:"کف بینی کروائیں", tabLearn:"علمِ کف شناسی سیکھیں",
+    step1Title:"ہاتھ منتخب کریں", rightHand:"دایاں ہاتھ", leftHand:"بایاں ہاتھ",
+    step2Title:"ہتھیلی کی تصویر دیں",
+    uploadHint1:"تصویر منتخب کرنے کے لیے یہاں دبائیں",
+    uploadHint2:"صاف روشنی میں، پوری ہتھیلی نظر آنی چاہیے",
+    takePhoto:"کیمرے سے تصویر لیں",
+    privacyNote:"آپ کی تصویر صرف اس تجزیے کے لیے استعمال ہوگی اور مستقل طور پر سرور پر محفوظ نہیں کی جاتی۔",
+    step3Title:"تجزیہ کروائیں", analyzeBtnLbl:"Palm Analyze کریں",
+    loadingText:"آپ کی ہتھیلی کا تجزیہ کیا جا رہا ہے… یہ چند لمحے لے سکتا ہے",
+    footerText:"یہ ویب ایپ صرف روایتی و تفریحی مقاصد کے لیے ہے۔ یہ طبی تشخیص یا سائنسی پیش گوئی نہیں کرتی۔",
+    errNoImage:"براہ کرم پہلے ہتھیلی کی تصویر منتخب کریں۔",
+    errGeneric:"معذرت، تجزیہ مکمل نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔",
+    errTimeout:"سرور سے جواب آنے میں تاخیر ہوئی۔ براہ کرم انٹرنیٹ چیک کر کے دوبارہ کوشش کریں۔",
+    errBadImage:"تصویر واضح نہیں ہے۔ براہ کرم بہتر روشنی میں، قریب سے، پوری ہتھیلی کی صاف تصویر دوبارہ لیں۔",
+    retakeBtn:"دوبارہ تصویر دیں",
+    newReadingBtn:"نئی ریڈنگ کریں",
+    copyBtn:"Copy کریں", printBtn:"Print کریں", downloadBtn:"Download کریں",
+    copiedMsg:"نتائج کاپی ہو گئے!",
+    qualityGoodTitle:"تصویر کا معیار: مناسب",
+    qualityPoorTitle:"تصویر کا معیار مناسب نہیں",
+    resultTitleHandType:"ہاتھ کی قسم", resultTitleFingers:"انگلیاں",
+    resultTitleThumb:"انگوٹھا", resultTitleLines:"اہم لکیریں",
+    resultTitleSecondary:"ثانوی لکیریں", resultTitleMounts:"Mounts (ابھار)",
+    resultTitleMarks:"خاص نشانات", resultTitleMarriage:"شادی سے متعلق",
+    resultTitleChildren:"اولاد سے متعلق", resultTitlePersonality:"مجموعی شخصیت",
+    resultTitleCareer:"کیریئر / کاروبار", resultTitleRelationships:"محبت / تعلقات",
+    resultTitleWealth:"مالی معاملات", resultTitleAnnotated:"نشان زدہ تصویر",
+    notVisible:"واضح نہیں", annotationLowNote:"تصویر پر نشانات لگانے کے لیے اعتماد کم ہے، اس لیے صرف تحریری نتیجہ دکھایا جا رہا ہے۔",
+    fThumb:"انگوٹھا", fIndex:"شہادت (Jupiter)", fMiddle:"درمیانی (Saturn)", fRing:"انگوٹھی والی (Apollo)", fLittle:"چھنگلیا (Mercury)",
+    lStart:"آغاز", lEnd:"اختتام", lLength:"لمبائی", lDepth:"گہرائی/وضاحت", lShape:"شکل",
+    lBreaks:"ٹوٹ (Breaks)", lBranches:"شاخیں", lForks:"دوہرا سرا (Forks)", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
+    lInterp:"روایتی تشریح"
+  },
+  en: {
+    brandName:"Palm Reading", eyebrow:"TRADITIONAL PALMISTRY · AI ASSISTED",
+    heroTitle:"Discover the Story in Your Hand",
+    heroLead:"Upload a clear photo of your palm and get a detailed, beautifully presented reading based on traditional palmistry. This is a traditional / entertainment interpretation, not a scientific prediction.",
+    tabReading:"Get a Reading", tabLearn:"Learn Palmistry",
+    step1Title:"Select Your Hand", rightHand:"Right Hand", leftHand:"Left Hand",
+    step2Title:"Provide a Palm Photo",
+    uploadHint1:"Tap here to choose a photo",
+    uploadHint2:"Use good lighting, whole palm visible",
+    takePhoto:"Take a Photo",
+    privacyNote:"Your photo is used only for this analysis and is not permanently stored on the server.",
+    step3Title:"Run the Analysis", analyzeBtnLbl:"Analyze Palm",
+    loadingText:"Analyzing your palm… this can take a few moments",
+    footerText:"This app is for traditional and entertainment purposes only. It does not provide medical diagnosis or scientific prediction.",
+    errNoImage:"Please select a palm photo first.",
+    errGeneric:"Sorry, the analysis could not be completed. Please try again.",
+    errTimeout:"The server took too long to respond. Please check your connection and try again.",
+    errBadImage:"The image isn't clear enough. Please retake it in better light, closer, with the whole palm visible.",
+    retakeBtn:"Retake Photo",
+    newReadingBtn:"Start New Reading",
+    copyBtn:"Copy", printBtn:"Print", downloadBtn:"Download",
+    copiedMsg:"Results copied!",
+    qualityGoodTitle:"Image quality: good",
+    qualityPoorTitle:"Image quality needs improvement",
+    resultTitleHandType:"Hand Shape", resultTitleFingers:"Fingers",
+    resultTitleThumb:"Thumb", resultTitleLines:"Major Lines",
+    resultTitleSecondary:"Secondary Lines", resultTitleMounts:"Mounts",
+    resultTitleMarks:"Special Marks", resultTitleMarriage:"Marriage",
+    resultTitleChildren:"Children", resultTitlePersonality:"Overall Personality",
+    resultTitleCareer:"Career / Business", resultTitleRelationships:"Love / Relationships",
+    resultTitleWealth:"Money / Wealth", resultTitleAnnotated:"Annotated Image",
+    notVisible:"Not visible", annotationLowNote:"Confidence for marking the image is low, so only the written result is shown.",
+    fThumb:"Thumb", fIndex:"Index (Jupiter)", fMiddle:"Middle (Saturn)", fRing:"Ring (Apollo)", fLittle:"Little (Mercury)",
+    lStart:"Start", lEnd:"End", lLength:"Length", lDepth:"Depth/Clarity", lShape:"Shape",
+    lBreaks:"Breaks", lBranches:"Branches", lForks:"Forks", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
+    lInterp:"Traditional Interpretation"
+  }
+};
+let currentLang = 'ur';
+
+function setLang(l){
+  currentLang = l;
+  document.documentElement.lang = (l==='ur')?'ur':'en';
+  document.documentElement.dir = (l==='ur')?'rtl':'ltr';
+  document.body.classList.toggle('lang-en', l==='en');
+  document.getElementById('btnUr').classList.toggle('active', l==='ur');
+  document.getElementById('btnEn').classList.toggle('active', l==='en');
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const key = el.getAttribute('data-i');
+    if(I18N[l][key]) el.innerHTML = I18N[l][key];
+  });
+}
+
+function t(key){ return I18N[currentLang][key] || key; }
+
+/* ============================================================
+   TAB SWITCH
+   ============================================================ */
+function showTab(name){
+  document.getElementById('viewReading').classList.toggle('hidden', name!=='reading');
+  document.getElementById('viewLearn').classList.toggle('hidden', name!=='learn');
+  document.getElementById('tabReading').classList.toggle('active', name==='reading');
+  document.getElementById('tabLearn').classList.toggle('active', name==='learn');
+}
+
+/* ============================================================
+   HAND SELECT
+   ============================================================ */
+let selectedHand = 'right';
+function selectHand(h){
+  selectedHand = h;
+  document.getElementById('optRight').classList.toggle('selected', h==='right');
+  document.getElementById('optLeft').classList.toggle('selected', h==='left');
+}
+
+/* ============================================================
+   IMAGE UPLOAD
+   ============================================================ */
+let uploadedBase64 = null; // full data URL
+let uploadedMime = null;
+
+function handleFile(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showError(t('errBadImage'));
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    uploadedBase64 = e.target.result;
+    uploadedMime = file.type;
+    document.getElementById('previewImg').src = uploadedBase64;
+    document.getElementById('uploadZoneBox').classList.add('hidden');
+    document.getElementById('previewBox').classList.remove('hidden');
+    document.getElementById('analyzeBtn').disabled = false;
+    clearError();
+    hideResults();
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetImage(){
+  uploadedBase64 = null;
+  uploadedMime = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('previewBox').classList.add('hidden');
+  document.getElementById('uploadZoneBox').classList.remove('hidden');
+  document.getElementById('analyzeBtn').disabled = true;
+  const c = document.getElementById('annCanvas');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+}
+
+function hideResults(){
+  document.getElementById('resultsBox').innerHTML = '';
+}
+
+function showError(msg){
+  document.getElementById('errorBox').innerHTML =
+    `<div class="alert alert-warn"><span class="ic">⚠️</span><div>${escapeHtml(msg)}</div></div>`;
+}
+function clearError(){
+  document.getElementById('errorBox').innerHTML = '';
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
+}
+
+/* ============================================================
+   ANALYZE
+   ============================================================ */
+async function analyzePalm(){
+  clearError();
+  hideResults();
+  if(!uploadedBase64){
+    showError(t('errNoImage'));
+    return;
+  }
+  document.getElementById('loadingPanel').classList.remove('hidden');
+  document.getElementById('analyzeBtn').disabled = true;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=>controller.abort(), 45000);
+
+  try{
+    const resp = await fetch('/api/analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        image: uploadedBase64,
+        hand: selectedHand,
+        language: currentLang
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if(!resp.ok){
+      const errData = await safeJson(resp);
+      throw new Error(errData && errData.error ? errData.error : ('HTTP '+resp.status));
+    }
+    const data = await resp.json();
+    renderResults(data);
+  }catch(err){
+    if(err.name === 'AbortError'){
+      showError(t('errTimeout'));
+    }else{
+      showError(t('errGeneric'));
+    }
+    console.error('Analyze error:', err);
+  }finally{
+    document.getElementById('loadingPanel').classList.add('hidden');
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+async function safeJson(resp){
+  try{ return await resp.json(); }catch(e){ return null; }
+}
+
+/* ============================================================
+   RENDER RESULTS
+   ============================================================ */
+let lastResultData = null;
+
+function renderResults(data){
+  lastResultData = data;
+  const box = document.getElementById('resultsBox');
+  let html = '';
+
+  // Image quality gate
+  const q = data.image_quality || {};
+  const isPoor = (q.status && q.status.toLowerCase() !== 'good');
+  if(isPoor){
+    html += `<div class="panel">
+      <div class="alert alert-warn">
+        <span class="ic">📷</span>
+        <div>
+          <strong>${t('qualityPoorTitle')}</strong>
+          <p style="margin:6px 0 0;">${escapeHtml(q.message || t('errBadImage'))}</p>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-block" onclick="resetImage(); hideResults();">${t('retakeBtn')}</button>
+    </div>`;
+    box.innerHTML = html;
+    box.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  // Annotated image
+  html += `<div class="panel">
+    <h2>🖼️ <span>${t('resultTitleAnnotated')}</span></h2>
+    <div class="preview-wrap" id="resultImgWrap">
+      <img id="resultImg" src="${uploadedBase64}">
+      <canvas id="resultCanvas"></canvas>
+    </div>
+    ${(!data.annotation_confidence || data.annotation_confidence==='none' || data.annotation_confidence==='low')
+      ? `<p class="privacy-note" style="margin-top:10px;">${t('annotationLowNote')}</p>` : ''}
+  </div>`;
+
+  html += cardSimple('✋', t('resultTitleHandType'), renderHandType(data.hand_type));
+  html += cardSimple('✌️', t('resultTitleFingers'), renderFingers(data.fingers));
+  html += cardSimple('👍', t('resultTitleThumb'), renderKV(data.thumb, ['length','width','flexibility','upper_phalanx','lower_phalanx','meaning'],
+    {length:'lLength',width:'lLength',flexibility:'lShape',upper_phalanx:'lShape',lower_phalanx:'lShape',meaning:'lInterp'}));
+
+  html += `<div class="panel"><h2>🔮 <span>${t('resultTitleLines')}</span></h2>
+    ${renderLine('dot-heart', currentLang==='ur'?'Heart Line — لکیرِ دل':'Heart Line', data.heart_line)}
+    ${renderLine('dot-head', currentLang==='ur'?'Head Line — لکیرِ دماغ':'Head Line', data.head_line)}
+    ${renderLine('dot-life', currentLang==='ur'?'Life Line — لکیرِ حیات':'Life Line', data.life_line)}
+    ${renderLine('dot-fate', currentLang==='ur'?'Fate Line — لکیرِ مقدر':'Fate Line', data.fate_line)}
+  </div>`;
+
+  html += cardSimple('〰️', t('resultTitleSecondary'), renderSecondary(data.secondary_lines));
+  html += cardSimple('⛰️', t('resultTitleMounts'), renderMounts(data.mounts));
+  html += cardSimple('✳️', t('resultTitleMarks'), renderMarks(data.special_marks));
+  html += cardSimple('💍', t('resultTitleMarriage'), renderKV(data.marriage, ['lines_count','description','shape','forks_breaks'],
+    {lines_count:'lLength',description:'lInterp',shape:'lShape',forks_breaks:'lForks'}));
+  html += cardSimple('👶', t('resultTitleChildren'), renderChildren(data.children));
+  html += cardSimple('🌟', t('resultTitlePersonality'), renderFreeText(data.personality));
+  html += cardSimple('💼', t('resultTitleCareer'), renderFreeText(data.career));
+  html += cardSimple('❤️', t('resultTitleRelationships'), renderFreeText(data.relationships));
+  html += cardSimple('💰', t('resultTitleWealth'), renderFreeText(data.wealth));
+
+  html += `<div class="panel disclaimer-box">
+    ${escapeHtml(data.disclaimer || defaultDisclaimer())}
+  </div>`;
+
+  html += `<div class="result-actions">
+    <button class="btn btn-outline" onclick="copyResults()">📋 ${t('copyBtn')}</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨️ ${t('printBtn')}</button>
+    <button class="btn btn-outline" onclick="downloadResults()">⬇️ ${t('downloadBtn')}</button>
+  </div>
+  <button class="btn btn-gold btn-block" onclick="startNewReading()">🔁 ${t('newReadingBtn')}</button>`;
+
+  box.innerHTML = html;
+  box.scrollIntoView({behavior:'smooth'});
+
+  // draw annotations after image loads
+  const img = document.getElementById('resultImg');
+  const drawFn = ()=>drawAnnotations(data);
+  if(img.complete) drawFn(); else img.onload = drawFn;
+}
+
+function cardSimple(icon, title, innerHtml){
+  return `<div class="panel"><h2>${icon} <span>${title}</span></h2>${innerHtml}</div>`;
+}
+
+function confBadge(conf){
+  if(!conf) return '';
+  const norm = conf.replace(/\s+/g,'-');
+  const label = (conf.toLowerCase()==='not visible' || conf.toLowerCase()==='notvisible') ? t('notVisible') : conf;
+  return `<span class="conf-badge conf-${norm}">${escapeHtml(label)}</span>`;
+}
+
+function renderHandType(ht){
+  if(!ht) return `<p>${t('notVisible')}</p>`;
+  return `<div class="subcard">
+    <div class="row-title">${escapeHtml(ht.type||'')} ${confBadge(ht.confidence)}</div>
+    <p>${escapeHtml(ht.description||'')}</p>
+  </div>`;
+}
+
+function renderFingers(f){
+  if(!f) return `<p>${t('notVisible')}</p>`;
+  const order = [['thumb','fThumb'],['index','fIndex'],['middle','fMiddle'],['ring','fRing'],['little','fLittle']];
+  let out = '';
+  order.forEach(([key,labelKey])=>{
+    const fi = f[key];
+    if(!fi) return;
+    out += `<div class="subcard">
+      <div class="row-title">${t(labelKey)} ${confBadge(fi.confidence)}</div>
+      ${fi.length?`<p><span class="k">${t('lLength')}:</span> ${escapeHtml(fi.length)}</p>`:''}
+      ${fi.thickness?`<p><span class="k">Thickness:</span> ${escapeHtml(fi.thickness)}</p>`:''}
+      ${fi.shape?`<p><span class="k">${t('lShape')}:</span> ${escapeHtml(fi.shape)}</p>`:''}
+      ${fi.spacing?`<p><span class="k">Spacing:</span> ${escapeHtml(fi.spacing)}</p>`:''}
+      ${fi.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(fi.meaning)}</p>`:''}
+    </div>`;
+  });
+  return out || `<p>${t('notVisible')}</p>`;
+}
+
+function renderKV(obj, keys, labelMap){
+  if(!obj) return `<p>${t('notVisible')}</p>`;
+  let out = `<div class="subcard">`;
+  if(obj.confidence) out += `<div class="row-title">${confBadge(obj.confidence)}</div>`;
+  keys.forEach(k=>{
+    if(obj[k]){
+      const lbl = labelMap && labelMap[k] ? t(labelMap[k]) : k;
+      out += `<p><span class="k">${lbl}:</span> ${escapeHtml(obj[k])}</p>`;
+    }
+  });
+  out += `</div>`;
+  return out;
+}
+
+function renderLine(dotClass, title, line){
+  if(!line){
+    return `<div class="subcard"><div class="row-title"><span class="line-dot ${dotClass}"></span>${title}</div><p>${t('notVisible')}</p></div>`;
+  }
+  const fields = [
+    ['start','lStart'],['end','lEnd'],['length','lLength'],['depth','lDepth'],['shape','lShape'],
+    ['breaks','lBreaks'],['branches','lBranches'],['forks','lForks'],['islands','lIslands'],
+    ['crosses','lCrosses'],['chains','lChains']
+  ];
+  let out = `<div class="subcard">
+    <div class="row-title"><span class="line-dot ${dotClass}"></span>${title} ${confBadge(line.confidence)}</div>`;
+  fields.forEach(([k,labelKey])=>{
+    if(line[k]) out += `<p><span class="k">${t(labelKey)}:</span> ${escapeHtml(line[k])}</p>`;
+  });
+  if(line.relation_to_other_lines) out += `<p><span class="k">Relation:</span> ${escapeHtml(line.relation_to_other_lines)}</p>`;
+  if(line.interpretation) out += `<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(line.interpretation)}</p>`;
+  out += `</div>`;
+  return out;
+}
+
+function renderSecondary(sec){
+  if(!sec) return `<p>${t('notVisible')}</p>`;
+  let out = '';
+  Object.keys(sec).forEach(key=>{
+    const item = sec[key];
+    if(!item) return;
+    out += `<div class="subcard">
+      <div class="row-title">${escapeHtml(prettify(key))} ${confBadge(item.confidence)}</div>
+      <p>${escapeHtml(item.description || item.interpretation || t('notVisible'))}</p>
+    </div>`;
+  });
+  return out || `<p>${t('notVisible')}</p>`;
+}
+
+function renderMounts(m){
+  if(!m) return `<p>${t('notVisible')}</p>`;
+  let out = '';
+  Object.keys(m).forEach(key=>{
+    const item = m[key];
+    if(!item) return;
+    out += `<div class="subcard">
+      <div class="row-title">${escapeHtml(prettify(key))} ${confBadge(item.confidence)}</div>
+      ${item.level?`<p><span class="k">Level:</span> ${escapeHtml(item.level)}</p>`:''}
+      ${item.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(item.meaning)}</p>`:''}
+    </div>`;
+  });
+  return out || `<p>${t('notVisible')}</p>`;
+}
+
+function renderMarks(marks){
+  if(!marks || !marks.length) return `<p>${t('notVisible')}</p>`;
+  let out = '';
+  marks.forEach(mk=>{
+    out += `<div class="subcard">
+      <div class="row-title">${escapeHtml(mk.type||'')} ${confBadge(mk.confidence)}</div>
+      ${mk.location?`<p><span class="k">Location:</span> ${escapeHtml(mk.location)}</p>`:''}
+      ${mk.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(mk.meaning)}</p>`:''}
+    </div>`;
+  });
+  return out;
+}
+
+function renderChildren(ch){
+  if(!ch) return `<p>${t('notVisible')}</p>`;
+  return `<div class="subcard">
+    <p>${escapeHtml(ch.interpretation||'')}</p>
+    ${ch.disclaimer?`<p style="color:var(--danger);">${escapeHtml(ch.disclaimer)}</p>`:''}
+  </div>`;
+}
+
+function renderFreeText(obj){
+  if(!obj) return `<p>${t('notVisible')}</p>`;
+  if(typeof obj === 'string') return `<div class="subcard"><p>${escapeHtml(obj)}</p></div>`;
+  let out = `<div class="subcard">`;
+  Object.keys(obj).forEach(k=>{
+    if(k==='confidence') return;
+    out += `<p><span class="k">${escapeHtml(prettify(k))}:</span> ${escapeHtml(obj[k])}</p>`;
+  });
+  if(obj.confidence) out = out.replace('<div class="subcard">', `<div class="subcard"><div class="row-title">${confBadge(obj.confidence)}</div>`);
+  out += `</div>`;
+  return out;
+}
+
+function prettify(key){
+  return key.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
+
+function defaultDisclaimer(){
+  return currentLang==='ur'
+    ? "یہ reading روایتی پامسٹری کی تشریحات پر مبنی ہے۔ پامسٹری سائنسی طور پر مستقبل کی پیش گوئی، بیماری کی تشخیص، fertility، اولاد کی تعداد یا جنس، موت کی عمر یا مالی کامیابی کی ضمانت دینے کا ثابت شدہ طریقہ نہیں ہے۔ اسے صرف روایتی/تفریحی interpretation سمجھیں۔"
+    : "This reading is based on traditional palmistry interpretations. Palmistry is not a scientifically proven method for predicting the future, diagnosing illness, fertility, the number or gender of children, age of death, or guaranteed financial success. Please treat it as traditional / entertainment interpretation only.";
+}
+
+/* ============================================================
+   CANVAS ANNOTATIONS
+   ============================================================ */
+function drawAnnotations(data){
+  const conf = data.annotation_confidence;
+  if(!conf || conf === 'none' || conf === 'low') return; // do not draw fake lines
+
+  const img = document.getElementById('resultImg');
+  const canvas = document.getElementById('resultCanvas');
+  if(!img || !canvas) return;
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const W = canvas.width, H = canvas.height;
+  const colorMap = { heart_line:'#e05c52', head_line:'#4f8fd9', life_line:'#4fbf5e', fate_line:'#e0c341' };
+
+  ['heart_line','head_line','life_line','fate_line'].forEach(key=>{
+    const line = data[key];
+    if(line && Array.isArray(line.points) && line.points.length>=2){
+      ctx.beginPath();
+      ctx.lineWidth = Math.max(2, W*0.006);
+      ctx.strokeStyle = colorMap[key];
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      line.points.forEach((p,i)=>{
+        const x = p.x*W, y = p.y*H;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+  });
+
+  if(data.mounts){
+    Object.keys(data.mounts).forEach(key=>{
+      const mo = data.mounts[key];
+      if(mo && mo.point && typeof mo.point.x==='number'){
+        const x = mo.point.x*W, y = mo.point.y*H;
+        ctx.beginPath();
+        ctx.arc(x,y,Math.max(4,W*0.012),0,2*Math.PI);
+        ctx.strokeStyle = '#c9a769';
+        ctx.lineWidth = Math.max(1.5,W*0.003);
+        ctx.stroke();
+      }
+    });
+  }
+
+  if(Array.isArray(data.special_marks)){
+    data.special_marks.forEach(mk=>{
+      if(mk.point && typeof mk.point.x==='number'){
+        const x = mk.point.x*W, y = mk.point.y*H;
+        ctx.beginPath();
+        ctx.arc(x,y,Math.max(3,W*0.008),0,2*Math.PI);
+        ctx.fillStyle = 'rgba(224,122,107,0.85)';
+        ctx.fill();
+      }
+    });
+  }
+}
+
+/* ============================================================
+   COPY / DOWNLOAD
+   ============================================================ */
+function resultsAsText(){
+  if(!lastResultData) return '';
+  return JSON.stringify(lastResultData, null, 2);
+}
+
+function copyResults(){
+  const el = document.getElementById('resultsBox');
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    alert(t('copiedMsg'));
+  }).catch(()=>{
+    alert(t('copiedMsg'));
+  });
+}
+
+function downloadResults(){
+  const el = document.getElementById('resultsBox');
+  const text = el.innerText;
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'palm-reading.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function startNewReading(){
+  resetImage();
+  hideResults();
+  clearError();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* init */
+setLang('ur');
+</script>
+</body>
+</html>
