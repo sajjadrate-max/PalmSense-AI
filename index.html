@@ -586,7 +586,7 @@ function handleFile(evt){
     showError(t('errBadImage'));
     return;
   }
-  compressImage(file, 1600, 0.8).then(function(dataUrl){
+  compressImage(file, 1800, 0.85).then(function(dataUrl){
     uploadedBase64 = dataUrl;
     uploadedMime = 'image/jpeg';
     document.getElementById('previewImg').src = uploadedBase64;
