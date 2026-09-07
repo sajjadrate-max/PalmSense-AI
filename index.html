@@ -567,7 +567,7 @@ const I18N = {
     fThumb:"انگوٹھا", fIndex:"شہادت (Jupiter)", fMiddle:"درمیانی (Saturn)", fRing:"انگوٹھی والی (Apollo)", fLittle:"چھنگلیا (Mercury)",
     lStart:"آغاز", lEnd:"اختتام", lLength:"لمبائی", lDepth:"گہرائی/وضاحت", lShape:"شکل",
     lBreaks:"ٹوٹ (Breaks)", lBranches:"شاخیں", lForks:"دوہرا سرا (Forks)", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
-    lInterp:"روایتی تشریح"
+    lInterp:"روایتی تشریح", lRelation:"دیگر لکیروں سے تعلق"
   },
   en: {
     brandName:"Palm Reading", eyebrow:"TRADITIONAL PALMISTRY · AI ASSISTED",
@@ -610,9 +610,43 @@ const I18N = {
     fThumb:"Thumb", fIndex:"Index (Jupiter)", fMiddle:"Middle (Saturn)", fRing:"Ring (Apollo)", fLittle:"Little (Mercury)",
     lStart:"Start", lEnd:"End", lLength:"Length", lDepth:"Depth/Clarity", lShape:"Shape",
     lBreaks:"Breaks", lBranches:"Branches", lForks:"Forks", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
-    lInterp:"Traditional Interpretation"
+    lInterp:"Traditional Interpretation", lRelation:"Relation to Other Lines"
   }
 };
+/* Labels for values whose JSON key gets shown as a heading/label in the
+   UI (secondary line names, mounts sub-labels, personality/career/
+   relationships/wealth field names, etc.) — without this map these
+   would fall back to a prettified English key regardless of language. */
+const FIELD_LABELS = {
+  ur: {
+    thickness:"موٹائی", spacing:"فاصلہ", level:"سطح", location:"مقام",
+    sun_line:"سورج کی لکیر", health_line:"صحت کی لکیر", marriage_lines:"شادی کی لکیریں",
+    travel_lines:"سفر کی لکیریں", influence_lines:"اثر کی لکیریں", bracelets:"کلائی کی لکیریں",
+    confidence_trait:"اعتماد", communication:"بات چیت", emotional_style:"جذباتی انداز",
+    decision_making:"فیصلہ سازی", creativity:"تخلیقی صلاحیت", leadership:"قیادت",
+    tendencies:"رجحان", business_tendency:"کاروباری رجحان", communication_work:"مواصلاتی کام",
+    creative_work:"تخلیقی کام", stability_vs_change:"استحکام بمقابلہ تبدیلی",
+    emotional_nature:"جذباتی فطرت", attachment_style:"لگاؤ کا انداز",
+    financial_tendencies:"مالی رجحان", stability:"استحکام", risk_taking:"خطرہ مول لینا",
+    business_inclination:"کاروباری رجحان"
+  },
+  en: {
+    thickness:"Thickness", spacing:"Spacing", level:"Level", location:"Location",
+    sun_line:"Sun Line", health_line:"Health Line", marriage_lines:"Marriage Lines",
+    travel_lines:"Travel Lines", influence_lines:"Influence Lines", bracelets:"Bracelets",
+    confidence_trait:"Confidence", communication:"Communication", emotional_style:"Emotional Style",
+    decision_making:"Decision Making", creativity:"Creativity", leadership:"Leadership",
+    tendencies:"Tendencies", business_tendency:"Business Tendency", communication_work:"Communication Work",
+    creative_work:"Creative Work", stability_vs_change:"Stability vs Change",
+    emotional_nature:"Emotional Nature", attachment_style:"Attachment Style",
+    financial_tendencies:"Financial Tendencies", stability:"Stability", risk_taking:"Risk Taking",
+    business_inclination:"Business Inclination"
+  }
+};
+function trField(key){
+  return (FIELD_LABELS[currentLang] && FIELD_LABELS[currentLang][key]) || prettify(key);
+}
+
 let currentLang = 'ur';
 
 function setLang(l){
@@ -913,7 +947,15 @@ function renderResults(data){
     html += `<div class="panel"><h2>🔮 <span>${t('resultTitleLines')}</span></h2>${linesHtml}</div>`;
   }
 
-  if(show.secondary) html += cardSimple('〰️', t('resultTitleSecondary'), renderSecondary(data.secondary_lines));
+  if(show.secondary){
+    const secondaryFilter = {
+      marriage: ['marriage_lines'],
+      health: ['health_line'],
+      travel: ['travel_lines']
+    };
+    const onlyKeys = secondaryFilter[topic] || null; // null = show all (full reading)
+    html += cardSimple('〰️', t('resultTitleSecondary'), renderSecondary(data.secondary_lines, onlyKeys));
+  }
   if(show.mounts) html += cardSimple('⛰️', t('resultTitleMounts'), renderMounts(data.mounts));
   if(show.marks) html += cardSimple('✳️', t('resultTitleMarks'), renderMarks(data.special_marks));
   if(show.marriage) html += cardSimple('💍', t('resultTitleMarriage'), renderKV(data.marriage, ['lines_count','description','shape','forks_breaks'],
@@ -991,9 +1033,9 @@ function renderFingers(f){
     out += `<div class="subcard">
       <div class="row-title">${t(labelKey)} ${confBadge(fi.confidence)}</div>
       ${fi.length?`<p><span class="k">${t('lLength')}:</span> ${escapeHtml(fi.length)}</p>`:''}
-      ${fi.thickness?`<p><span class="k">Thickness:</span> ${escapeHtml(fi.thickness)}</p>`:''}
+      ${fi.thickness?`<p><span class="k">${trField('thickness')}:</span> ${escapeHtml(fi.thickness)}</p>`:''}
       ${fi.shape?`<p><span class="k">${t('lShape')}:</span> ${escapeHtml(fi.shape)}</p>`:''}
-      ${fi.spacing?`<p><span class="k">Spacing:</span> ${escapeHtml(fi.spacing)}</p>`:''}
+      ${fi.spacing?`<p><span class="k">${trField('spacing')}:</span> ${escapeHtml(fi.spacing)}</p>`:''}
       ${fi.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(fi.meaning)}</p>`:''}
     </div>`;
   });
@@ -1028,20 +1070,21 @@ function renderLine(dotClass, title, line){
   fields.forEach(([k,labelKey])=>{
     if(line[k]) out += `<p><span class="k">${t(labelKey)}:</span> ${escapeHtml(line[k])}</p>`;
   });
-  if(line.relation_to_other_lines) out += `<p><span class="k">Relation:</span> ${escapeHtml(line.relation_to_other_lines)}</p>`;
+  if(line.relation_to_other_lines) out += `<p><span class="k">${t('lRelation')}:</span> ${escapeHtml(line.relation_to_other_lines)}</p>`;
   if(line.interpretation) out += `<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(line.interpretation)}</p>`;
   out += `</div>`;
   return out;
 }
 
-function renderSecondary(sec){
+function renderSecondary(sec, onlyKeys){
   if(!sec) return `<p>${t('notVisible')}</p>`;
   let out = '';
   Object.keys(sec).forEach(key=>{
+    if(onlyKeys && !onlyKeys.includes(key)) return;
     const item = sec[key];
     if(!item) return;
     out += `<div class="subcard">
-      <div class="row-title">${escapeHtml(prettify(key))} ${confBadge(item.confidence)}</div>
+      <div class="row-title">${escapeHtml(trField(key))} ${confBadge(item.confidence)}</div>
       <p>${escapeHtml(item.description || item.interpretation || t('notVisible'))}</p>
     </div>`;
   });
@@ -1056,7 +1099,7 @@ function renderMounts(m){
     if(!item) return;
     out += `<div class="subcard">
       <div class="row-title">${escapeHtml(prettify(key))} ${confBadge(item.confidence)}</div>
-      ${item.level?`<p><span class="k">Level:</span> ${escapeHtml(item.level)}</p>`:''}
+      ${item.level?`<p><span class="k">${trField('level')}:</span> ${escapeHtml(item.level)}</p>`:''}
       ${item.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(item.meaning)}</p>`:''}
     </div>`;
   });
@@ -1069,7 +1112,7 @@ function renderMarks(marks){
   marks.forEach(mk=>{
     out += `<div class="subcard">
       <div class="row-title">${escapeHtml(mk.type||'')} ${confBadge(mk.confidence)}</div>
-      ${mk.location?`<p><span class="k">Location:</span> ${escapeHtml(mk.location)}</p>`:''}
+      ${mk.location?`<p><span class="k">${trField('location')}:</span> ${escapeHtml(mk.location)}</p>`:''}
       ${mk.meaning?`<p><span class="k">${t('lInterp')}:</span> ${escapeHtml(mk.meaning)}</p>`:''}
     </div>`;
   });
@@ -1090,7 +1133,7 @@ function renderFreeText(obj){
   let out = `<div class="subcard">`;
   Object.keys(obj).forEach(k=>{
     if(k==='confidence') return;
-    out += `<p><span class="k">${escapeHtml(prettify(k))}:</span> ${escapeHtml(obj[k])}</p>`;
+    out += `<p><span class="k">${escapeHtml(trField(k))}:</span> ${escapeHtml(obj[k])}</p>`;
   });
   if(obj.confidence) out = out.replace('<div class="subcard">', `<div class="subcard"><div class="row-title">${confBadge(obj.confidence)}</div>`);
   out += `</div>`;
