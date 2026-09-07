@@ -7,19 +7,14 @@
  *
  * The OpenAI API key is read ONLY from the environment variable OPENAI_API_KEY.
  * It is never sent to, or hard-coded in, the frontend.
- *
- * Deploy target: Vercel (this file placed at /api/analyze.js is auto-detected).
- * For other hosts (Render, Railway, a plain Node server, etc.) use server.js
- * instead, which wraps the same logic in an Express route.
  */
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const MODEL = "gpt-4o"; // vision-capable model
+const MODEL = "gpt-4o";
 const REQUEST_TIMEOUT_MS = 40000;
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MB safety cap
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 module.exports = async function handler(req, res) {
-  // CORS (adjust origin as needed for your deployment)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -48,7 +43,6 @@ module.exports = async function handler(req, res) {
     }
     const lang = language === "en" ? "en" : "ur";
 
-    // Rough size check on the base64 payload
     const approxBytes = Math.ceil((image.length * 3) / 4);
     if (approxBytes > MAX_IMAGE_BYTES) {
       return res.status(400).json({ error: "Image is too large. Please upload an image under 8 MB." });
@@ -81,7 +75,7 @@ module.exports = async function handler(req, res) {
                   type: "text",
                   text:
                     lang === "ur"
-                      ? "منسلک تصویر کا تجزیہ کریں اور صرف بیان کردہ JSON فارمیٹ میں جواب دیں۔"
+                      ? "منسلک تصویر کا تجزیہ کریں اور صرف بیان کردہ JSON فارمیٹ میں جواب دیں۔ یاد رہے: ہر value، چاہے وہ کتنی ہی مختصر ہو (جیسے 'موجود نہیں'، 'سیدھی'، 'درمیانہ')، اردو میں لکھیں — کوئی بھی انگریزی لفظ استعمال نہ کریں سوائے JSON کیز کے۔"
                       : "Analyze the attached image and respond ONLY in the specified JSON format.",
                 },
                 { type: "image_url", image_url: { url: image, detail: "high" } },
@@ -128,9 +122,6 @@ module.exports = async function handler(req, res) {
       return res.status(502).json({ error: "Could not parse the analysis result. Please try again." });
     }
 
-    // Server-side safety net: never let annotation coordinates through if the
-    // model itself said confidence was low/none — belt and suspenders on top
-    // of the prompt instruction and the frontend's own check.
     if (!parsed.annotation_confidence || ["none", "low"].includes(String(parsed.annotation_confidence).toLowerCase())) {
       parsed.annotation_confidence = parsed.annotation_confidence || "none";
     }
@@ -151,18 +142,19 @@ async function safeText(resp) {
 }
 
 /**
- * Builds the system prompt sent to the vision model. This encodes every
- * requirement from the product spec: traditional-only framing, mandatory
- * disclaimers, confidence levels, no hallucination, no fabricated
- * predictions about death/fertility/children's sex, and the structured
- * JSON output contract (including normalized 0-1 coordinates for the
- * on-image annotation overlay).
+ * Builds the system prompt sent to the vision model. Encodes the
+ * traditional-only framing, mandatory disclaimers, confidence levels,
+ * no-hallucination rule, and the structured JSON output contract
+ * (including normalized 0-1 coordinates for the on-image annotation
+ * overlay). The Urdu-language instruction is deliberately strict and
+ * repeated so that short field values (e.g. "None", "Straight",
+ * "Present") are translated too, not just the longer prose fields.
  */
 function buildSystemPrompt(lang, hand) {
   const langInstruction =
     lang === "ur"
-      ? "Write every human-readable text field (descriptions, meanings, interpretations, messages) in clear, natural Urdu. Keep JSON keys in English exactly as specified."
-      : "Write every human-readable text field (descriptions, meanings, interpretations, messages) in clear, natural English. Keep JSON keys in English exactly as specified.";
+      ? `Write EVERY human-readable text value in the JSON in clear, natural Urdu — with NO exceptions. This includes not just long interpretation/description/meaning fields, but also every short value such as: start, end, length, depth, shape, breaks, branches, forks, islands, crosses, chains, relation_to_other_lines, level, thickness, spacing, location, type, status, message. For example, instead of "None" write "موجود نہیں", instead of "Straight" write "سیدھی", instead of "Curved" write "خم دار", instead of "Present" write "موجود", instead of "Joined with Life Line" write "لائف لائن کے ساتھ ملی ہوئی", instead of "Long" write "لمبی", instead of "Deep" write "گہری", instead of "Under Ring Finger" write "انگوٹھی والی انگلی کے نیچے". The ONLY things that should remain in English/Latin script are: the JSON keys themselves (e.g. "heart_line", "confidence"), the confidence enum values which must stay exactly "High"/"Medium"/"Low"/"Not visible", the image_quality.status value ("good"/"poor"), the annotation_confidence value ("high"/"low"/"none"), the hand_type.type value (keep as "Earth Hand"/"Fire Hand"/"Air Hand"/"Water Hand"/"Mixed Type"), the mounts level value ("low"/"normal"/"developed"/"prominent"), and the special_marks.type value (keep as "Star"/"Cross"/"Triangle"/etc). Every other piece of text must be Urdu.`
+      : "Write every human-readable text field (descriptions, meanings, interpretations, messages, and all short field values) in clear, natural English. Keep JSON keys and the specified enum values in English exactly as specified.";
 
   return `You are a careful, traditional palmistry (hand-reading) analyst working from a single photo of a ${hand} hand.
 
@@ -172,17 +164,17 @@ CRITICAL FRAMING:
 - ${langInstruction}
 
 IMAGE QUALITY CHECK (do this first):
-Assess whether the palm is fully visible, in focus, reasonably lit, not cropped at the fingers, and whether the major lines are visible at all. If the image is blurry, too far away, poorly lit, cropped, or the palm is not clearly the subject, set "image_quality.status" to "poor", explain the specific issue(s) in "image_quality.message" (in the target language, friendly and actionable — tell the user exactly what to fix), and you may leave other fields minimal/empty since the frontend will stop at the quality gate. Otherwise set "image_quality.status" to "good".
+Assess whether the palm is fully visible, in focus, reasonably lit, not cropped at the fingers, and whether the major lines are visible at all. If the image is blurry, too far away, poorly lit, cropped, or the palm is not clearly the subject, set "image_quality.status" to "poor", explain the specific issue(s) in "image_quality.message" (in the target language, friendly and actionable), and you may leave other fields minimal/empty. Otherwise set "image_quality.status" to "good".
 
 NO HALLUCINATION — CONFIDENCE IS MANDATORY:
-For every observation, include a "confidence" value: one of "High", "Medium", "Low", or "Not visible". If a feature (a secondary line, a special mark, a mount) is not clearly visible in the photo, do NOT invent it — say so explicitly with confidence "Not visible" and a short note like "not clearly visible in this image" rather than describing a feature that isn't there. This applies especially to secondary lines (Sun/Apollo line, Health/Mercury line, Marriage lines, Travel lines, Influence lines, Bracelets/Rascettes) and special marks (star, cross, triangle, square, island, circle, trident, fork, grille, extra vertical/horizontal lines) — only report ones you can actually see.
+For every observation, include a "confidence" value: one of "High", "Medium", "Low", or "Not visible" (these four enum values stay in English exactly as written, even when the rest of the content is in Urdu). If a feature is not clearly visible in the photo, do NOT invent it — say so explicitly with confidence "Not visible".
 
 ANNOTATION COORDINATES:
-For the four major lines (heart_line, head_line, life_line, fate_line), if — and only if — you can trace them with real confidence, provide a "points" array of 4-8 normalized coordinate objects {"x":0-1,"y":0-1} tracing the line from start to end, where x is measured left-to-right and y top-to-bottom as fractions of the full image width/height. Do the same "point":{"x":..,"y":..} single coordinate for each mount and each special mark you report, marking its approximate center. If you cannot confidently localize coordinates for the visible lines/features, omit the "points"/"point" fields for those items entirely rather than guessing.
-Set the top-level "annotation_confidence" field to "high" only if you are genuinely confident in the coordinates for at least the main lines; otherwise set it to "low" or "none". When it is "low" or "none", omit points/point fields throughout (the frontend will not draw them, and fabricated coordinates would mislead the user).
+For the four major lines (heart_line, head_line, life_line, fate_line), if you can trace them with real confidence, provide a "points" array of 4-8 normalized coordinate objects {"x":0-1,"y":0-1}. Do the same "point":{"x":..,"y":..} for each mount and special mark. If not confident, omit points/point fields entirely.
+Set "annotation_confidence" to "high" only if genuinely confident; otherwise "low" or "none". When low/none, omit points/point fields throughout.
 
 OUTPUT FORMAT:
-Respond with ONLY a single JSON object (no markdown fences, no commentary) matching this exact shape (omit or null a nested object only when nothing is visible, but keep the top-level keys):
+Respond with ONLY a single JSON object (no markdown fences, no commentary) matching this exact shape:
 
 {
   "image_quality": { "status": "good|poor", "message": "" },
