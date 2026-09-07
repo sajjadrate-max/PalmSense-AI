@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: "Server is not configured (missing API key)." });
     }
 
-    const { image, hand, language } = req.body || {};
+    const { image, hand, language, topic } = req.body || {};
 
     if (!image || typeof image !== "string" || !image.startsWith("data:image")) {
       return res.status(400).json({ error: "Invalid or missing image data." });
@@ -42,13 +42,15 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "Invalid hand value. Expected 'right' or 'left'." });
     }
     const lang = language === "en" ? "en" : "ur";
+    const VALID_TOPICS = ["full", "marriage", "health", "fate", "wealth", "personality"];
+    const focusTopic = VALID_TOPICS.includes(topic) ? topic : "full";
 
     const approxBytes = Math.ceil((image.length * 3) / 4);
     if (approxBytes > MAX_IMAGE_BYTES) {
       return res.status(400).json({ error: "Image is too large. Please upload an image under 8 MB." });
     }
 
-    const systemPrompt = buildSystemPrompt(lang, hand);
+    const systemPrompt = buildSystemPrompt(lang, hand, focusTopic);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -150,7 +152,7 @@ async function safeText(resp) {
  * repeated so that short field values (e.g. "None", "Straight",
  * "Present") are translated too, not just the longer prose fields.
  */
-function buildSystemPrompt(lang, hand) {
+function buildSystemPrompt(lang, hand, focusTopic) {
   const langInstruction =
     lang === "ur"
       ? `Write EVERY human-readable text value in the JSON in clear, natural Urdu — with NO exceptions. This includes not just long interpretation/description/meaning fields, but also every short value such as: start, end, length, depth, shape, breaks, branches, forks, islands, crosses, chains, relation_to_other_lines, level, thickness, spacing, location, type, status, message. For example, instead of "None" write "موجود نہیں", instead of "Straight" write "سیدھی", instead of "Curved" write "خم دار", instead of "Present" write "موجود", instead of "Joined with Life Line" write "لائف لائن کے ساتھ ملی ہوئی", instead of "Long" write "لمبی", instead of "Deep" write "گہری", instead of "Under Ring Finger" write "انگوٹھی والی انگلی کے نیچے". The ONLY things that should remain in English/Latin script are: the JSON keys themselves (e.g. "heart_line", "confidence"), the confidence enum values which must stay exactly "High"/"Medium"/"Low"/"Not visible", the image_quality.status value ("good"/"poor"), the annotation_confidence value ("high"/"low"/"none"), the hand_type.type value (keep as "Earth Hand"/"Fire Hand"/"Air Hand"/"Water Hand"/"Mixed Type"), the mounts level value ("low"/"normal"/"developed"/"prominent"), and the special_marks.type value (keep as "Star"/"Cross"/"Triangle"/etc). Every other piece of text must be Urdu.
@@ -158,7 +160,28 @@ function buildSystemPrompt(lang, hand) {
 CRITICAL — SIMPLE, EXPLAINED LANGUAGE FOR ALL INTERPRETATION/MEANING FIELDS: Every field that carries a traditional interpretation (interpretation, meaning, description on lines/fingers/mounts/secondary_lines/marriage/children, and every value inside personality/career/relationships/wealth) must be a full, easy-to-understand Urdu SENTENCE for an ordinary reader who has no background in palmistry — never a bare word or short technical label. Explain what the trait actually means in plain, everyday language, the way you'd explain it to a friend, in roughly 12-25 Urdu words. For example, instead of "متوازن" write "آپ محبت میں نہ بہت زیادہ جذباتی ہیں اور نہ بالکل سرد — دل اور دماغ دونوں سے کام لیتے ہیں، اور رشتوں کو سمجھداری سے نبھاتے ہیں۔"; instead of "مضبوط" (for leadership) write "آپ میں فطری قائدانہ صلاحیت ہے — لوگ آپ کی بات پر بھروسہ کرتے ہیں اور آپ ذمہ داری لینے سے نہیں گھبراتے۔"; instead of "اچھا" (for communication) write "آپ اپنی بات واضح اور مؤثر انداز میں پہنچا لیتے ہیں، اور دوسروں کی بات بھی توجہ سے سنتے ہیں۔". Apply this same rule to every personality/career/relationships/wealth value, every line's "interpretation" field, every finger/mount/secondary-line "meaning"/"description" field, and the marriage/children interpretation fields — none of them should ever be a single word or short label; each must be a short, warm, explained sentence.`
       : "Write every human-readable text field (descriptions, meanings, interpretations, messages, and all short field values) in clear, natural English. Keep JSON keys and the specified enum values in English exactly as specified. Every interpretation/meaning/description field (including every value inside personality/career/relationships/wealth) must be a full, easy-to-understand explained sentence for an ordinary reader — never a bare word or short label.";
 
-  return `You are a careful, traditional palmistry (hand-reading) analyst working from a single photo of a ${hand} hand.
+  const TOPIC_LABELS_UR = {
+    marriage: "شادی اور محبت (Heart Line، marriage_lines، relationships)",
+    health: "صحت کا روایتی رجحان (Life Line، health_line)",
+    fate: "قسمت اور کیریئر (Fate Line، Head Line، career)",
+    wealth: "مالی معاملات (wealth)",
+    personality: "مجموعی شخصیت (personality، hand_type)",
+  };
+  const TOPIC_LABELS_EN = {
+    marriage: "marriage and love (heart_line, marriage_lines, relationships)",
+    health: "traditional health tendency (life_line, health_line)",
+    fate: "fate and career (fate_line, head_line, career)",
+    wealth: "money and wealth (wealth)",
+    personality: "overall personality (personality, hand_type)",
+  };
+  const focusInstruction =
+    focusTopic && focusTopic !== "full"
+      ? lang === "ur"
+        ? `\n\nFOCUS TOPIC: The user specifically wants to know about: ${TOPIC_LABELS_UR[focusTopic]}. Still fill in the complete JSON structure (the frontend needs it for the annotated image and consistency), but give exceptionally rich, detailed, warm, well-explained Urdu interpretation (aim for 40-70 Urdu words, several sentences) for the field(s) tied to this topic. Every other field can stay brief (a short accurate sentence is enough) since the user is not focused on those right now.`
+        : `\n\nFOCUS TOPIC: The user specifically wants to know about: ${TOPIC_LABELS_EN[focusTopic]}. Still fill in the complete JSON structure (the frontend needs it for the annotated image and consistency), but give exceptionally rich, detailed, well-explained interpretation (aim for 40-70 words, several sentences) for the field(s) tied to this topic. Every other field can stay brief since the user is not focused on those right now.`
+      : "";
+
+  return `You are a careful, traditional palmistry (hand-reading) analyst working from a single photo of a ${hand} hand.${focusInstruction}
 
 CRITICAL FRAMING:
 - Palmistry is a traditional / cultural / entertainment practice. It is NOT medical diagnosis and NOT scientifically validated prediction of the future.

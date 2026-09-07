@@ -90,14 +90,6 @@
   }
   .hero h1{font-size:clamp(26px,6vw,38px);margin:0 0 12px;}
   .hero p.lead{color:var(--ink-dim);max-width:560px;margin:0 auto 22px;font-size:15.5px;}
-  .hand-svg-wrap{display:flex;justify-content:center;margin:8px auto 6px;}
-  .hand-svg-wrap svg{width:150px;height:auto;filter:drop-shadow(0 6px 18px rgba(201,167,105,0.25));}
-  .hand-line{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:300;stroke-dashoffset:300;animation:draw 2.4s ease forwards;}
-  .hand-outline{fill:rgba(239,233,218,0.04);stroke:rgba(239,233,218,0.35);stroke-width:1.4;}
-  @keyframes draw{to{stroke-dashoffset:0;}}
-  @media (prefers-reduced-motion: reduce){
-    .hand-line{animation:none;stroke-dashoffset:0;}
-  }
 
   /* CARD / PANEL */
   .panel{
@@ -114,6 +106,18 @@
     width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);
     color:var(--gold-bright);font-size:13px;font-family:'Inter',sans-serif;flex-shrink:0;
   }
+
+  /* STEP: topic select */
+  .topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .topic-opt{
+    background:var(--bg-deep);border:1.5px solid var(--line);
+    border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .topic-opt.selected{border-color:var(--gold);background:rgba(201,167,105,0.08);}
+  .topic-opt .t-emoji{font-size:22px;display:block;margin-bottom:6px;}
+  .topic-opt .t-lbl{font-size:13.5px;color:var(--ink);}
+  .topic-note{font-size:12.5px;color:var(--muted);margin:12px 0 0;text-align:center;}
 
   /* STEP: hand select */
   .hand-select{display:flex;gap:12px;}
@@ -262,15 +266,6 @@
   <div class="eyebrow" data-i="eyebrow">TRADITIONAL PALMISTRY · AI ASSISTED</div>
   <h1 data-i="heroTitle">اپنے ہاتھ کی کہانی جانیے</h1>
   <p class="lead" data-i="heroLead">اپنی ہتھیلی کی صاف تصویر اپلوڈ کریں اور روایتی علمِ کف شناسی کے مطابق تفصیلی، خوبصورت انداز میں تجزیہ حاصل کریں۔ یہ محض روایتی و تفریحی تشریح ہے، سائنسی پیش گوئی نہیں۔</p>
-  <div class="hand-svg-wrap">
-    <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
-      <path class="hand-outline" d="M70 230 C55 220 50 190 52 160 L48 90 C47 82 55 78 60 85 L65 120 L65 55 C65 47 74 44 78 52 L82 118 L82 40 C82 32 92 30 95 38 L98 120 L100 45 C100 37 110 36 112 45 L114 122 C120 100 132 92 138 100 C144 108 140 130 132 150 L128 190 C126 210 112 228 95 232 Z"/>
-      <path class="hand-line" d="M60 150 C75 145 90 148 100 158" stroke="#d9736c"/>
-      <path class="hand-line" d="M58 130 C78 128 96 132 112 128" stroke="#5b9bd9" style="animation-delay:.2s"/>
-      <path class="hand-line" d="M75 200 C68 175 68 150 78 128" stroke="#6cbf6c" style="animation-delay:.4s"/>
-      <path class="hand-line" d="M95 210 L92 130" stroke="#e0c341" style="animation-delay:.6s"/>
-    </svg>
-  </div>
 </section>
 
 <div class="tabbar">
@@ -283,8 +278,39 @@
   <!-- ============ READING TAB ============ -->
   <div id="viewReading">
 
+    <div class="panel" id="stepTopic">
+      <h2><span class="num">1</span><span data-i="step1Title">آپ کیا جاننا چاہتے ہیں؟</span></h2>
+      <div class="topic-grid">
+        <div class="topic-opt selected" id="topicFull" onclick="selectTopic('full')">
+          <span class="t-emoji">📖</span>
+          <span class="t-lbl" data-i="topicFull">مکمل تجزیہ</span>
+        </div>
+        <div class="topic-opt" id="topicMarriage" onclick="selectTopic('marriage')">
+          <span class="t-emoji">💍</span>
+          <span class="t-lbl" data-i="topicMarriage">شادی / محبت</span>
+        </div>
+        <div class="topic-opt" id="topicHealth" onclick="selectTopic('health')">
+          <span class="t-emoji">🩺</span>
+          <span class="t-lbl" data-i="topicHealth">صحت کا رجحان</span>
+        </div>
+        <div class="topic-opt" id="topicFate" onclick="selectTopic('fate')">
+          <span class="t-emoji">⭐</span>
+          <span class="t-lbl" data-i="topicFate">قسمت / کیریئر</span>
+        </div>
+        <div class="topic-opt" id="topicWealth" onclick="selectTopic('wealth')">
+          <span class="t-emoji">💰</span>
+          <span class="t-lbl" data-i="topicWealth">مالی معاملات</span>
+        </div>
+        <div class="topic-opt" id="topicPersonality" onclick="selectTopic('personality')">
+          <span class="t-emoji">🌟</span>
+          <span class="t-lbl" data-i="topicPersonality">شخصیت</span>
+        </div>
+      </div>
+      <p class="topic-note" data-i="topicNote">جو موضوع منتخب کریں گے، نتیجہ صرف اسی کے بارے میں تفصیل سے دکھایا جائے گا۔</p>
+    </div>
+
     <div class="panel" id="stepHand">
-      <h2><span class="num">1</span><span data-i="step1Title">ہاتھ منتخب کریں</span></h2>
+      <h2><span class="num">2</span><span data-i="step2TitleHand">ہاتھ منتخب کریں</span></h2>
       <div class="hand-select">
         <div class="hand-opt selected" id="optRight" onclick="selectHand('right')">
           <span class="emoji">🖐️</span>
@@ -298,7 +324,7 @@
     </div>
 
     <div class="panel" id="stepUpload">
-      <h2><span class="num">2</span><span data-i="step2Title">ہتھیلی کی تصویر دیں</span></h2>
+      <h2><span class="num">3</span><span data-i="step2Title">ہتھیلی کی تصویر دیں</span></h2>
 
       <div id="uploadZoneBox">
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
@@ -326,7 +352,7 @@
     </div>
 
     <div class="panel" id="stepAnalyze">
-      <h2><span class="num">3</span><span data-i="step3Title">تجزیہ کروائیں</span></h2>
+      <h2><span class="num">4</span><span data-i="step3Title">تجزیہ کروائیں</span></h2>
       <button class="btn btn-gold btn-block" id="analyzeBtn" onclick="analyzePalm()" disabled>
         <span>🔮</span><span data-i="analyzeBtnLbl">Palm Analyze کریں</span>
       </button>
@@ -465,7 +491,11 @@ const I18N = {
     heroTitle:"اپنے ہاتھ کی کہانی جانیے",
     heroLead:"اپنی ہتھیلی کی صاف تصویر اپلوڈ کریں اور روایتی علمِ کف شناسی کے مطابق تفصیلی، خوبصورت انداز میں تجزیہ حاصل کریں۔ یہ محض روایتی و تفریحی تشریح ہے، سائنسی پیش گوئی نہیں۔",
     tabReading:"کف بینی کروائیں", tabLearn:"علمِ کف شناسی سیکھیں",
-    step1Title:"ہاتھ منتخب کریں", rightHand:"دایاں ہاتھ", leftHand:"بایاں ہاتھ",
+    step1Title:"آپ کیا جاننا چاہتے ہیں؟",
+    topicFull:"مکمل تجزیہ", topicMarriage:"شادی / محبت", topicHealth:"صحت کا رجحان",
+    topicFate:"قسمت / کیریئر", topicWealth:"مالی معاملات", topicPersonality:"شخصیت",
+    topicNote:"جو موضوع منتخب کریں گے، نتیجہ صرف اسی کے بارے میں تفصیل سے دکھایا جائے گا۔",
+    step2TitleHand:"ہاتھ منتخب کریں", rightHand:"دایاں ہاتھ", leftHand:"بایاں ہاتھ",
     step2Title:"ہتھیلی کی تصویر دیں",
     uploadHint1:"تصویر منتخب کرنے کے لیے یہاں دبائیں",
     uploadHint2:"صاف روشنی میں، پوری ہتھیلی نظر آنی چاہیے",
@@ -502,7 +532,11 @@ const I18N = {
     heroTitle:"Discover the Story in Your Hand",
     heroLead:"Upload a clear photo of your palm and get a detailed, beautifully presented reading based on traditional palmistry. This is a traditional / entertainment interpretation, not a scientific prediction.",
     tabReading:"Get a Reading", tabLearn:"Learn Palmistry",
-    step1Title:"Select Your Hand", rightHand:"Right Hand", leftHand:"Left Hand",
+    step1Title:"What would you like to know?",
+    topicFull:"Full Reading", topicMarriage:"Marriage / Love", topicHealth:"Health Tendency",
+    topicFate:"Fate / Career", topicWealth:"Money / Wealth", topicPersonality:"Personality",
+    topicNote:"Whichever topic you choose, the result will focus in detail only on that.",
+    step2TitleHand:"Select Your Hand", rightHand:"Right Hand", leftHand:"Left Hand",
     step2Title:"Provide a Palm Photo",
     uploadHint1:"Tap here to choose a photo",
     uploadHint2:"Use good lighting, whole palm visible",
@@ -560,6 +594,19 @@ function showTab(name){
   document.getElementById('viewLearn').classList.toggle('hidden', name!=='learn');
   document.getElementById('tabReading').classList.toggle('active', name==='reading');
   document.getElementById('tabLearn').classList.toggle('active', name==='learn');
+}
+
+/* ============================================================
+   TOPIC SELECT
+   ============================================================ */
+let selectedTopic = 'full';
+const TOPIC_IDS = ['full','marriage','health','fate','wealth','personality'];
+function selectTopic(topic){
+  selectedTopic = topic;
+  TOPIC_IDS.forEach(function(id){
+    const el = document.getElementById('topic' + id.charAt(0).toUpperCase() + id.slice(1));
+    if(el) el.classList.toggle('selected', id===topic);
+  });
 }
 
 /* ============================================================
@@ -694,6 +741,7 @@ async function analyzePalm(){
       body: JSON.stringify({
         image: uploadedBase64,
         hand: selectedHand,
+        topic: selectedTopic,
         language: currentLang
       }),
       signal: controller.signal
@@ -763,28 +811,56 @@ function renderResults(data){
       ? `<p class="privacy-note" style="margin-top:10px;">${t('annotationLowNote')}</p>` : ''}
   </div>`;
 
-  html += cardSimple('✋', t('resultTitleHandType'), renderHandType(data.hand_type));
-  html += cardSimple('✌️', t('resultTitleFingers'), renderFingers(data.fingers));
-  html += cardSimple('👍', t('resultTitleThumb'), renderKV(data.thumb, ['length','width','flexibility','upper_phalanx','lower_phalanx','meaning'],
+  // Which sections to show, based on the topic the user picked
+  const topic = selectedTopic || 'full';
+  const show = {
+    handType: topic==='full' || topic==='personality',
+    fingers: topic==='full',
+    thumb: topic==='full',
+    lines: topic==='full' || topic==='marriage' || topic==='health' || topic==='fate',
+    secondary: topic==='full' || topic==='marriage' || topic==='health',
+    mounts: topic==='full',
+    marks: topic==='full',
+    marriage: topic==='full' || topic==='marriage',
+    children: topic==='full' || topic==='marriage',
+    personality: topic==='full' || topic==='personality',
+    career: topic==='full' || topic==='fate' || topic==='wealth',
+    relationships: topic==='full' || topic==='marriage' || topic==='personality',
+    wealth: topic==='full' || topic==='wealth'
+  };
+
+  if(show.handType) html += cardSimple('✋', t('resultTitleHandType'), renderHandType(data.hand_type));
+  if(show.fingers) html += cardSimple('✌️', t('resultTitleFingers'), renderFingers(data.fingers));
+  if(show.thumb) html += cardSimple('👍', t('resultTitleThumb'), renderKV(data.thumb, ['length','width','flexibility','upper_phalanx','lower_phalanx','meaning'],
     {length:'lLength',width:'lLength',flexibility:'lShape',upper_phalanx:'lShape',lower_phalanx:'lShape',meaning:'lInterp'}));
 
-  html += `<div class="panel"><h2>🔮 <span>${t('resultTitleLines')}</span></h2>
-    ${renderLine('dot-heart', currentLang==='ur'?'Heart Line — لکیرِ دل':'Heart Line', data.heart_line)}
-    ${renderLine('dot-head', currentLang==='ur'?'Head Line — لکیرِ دماغ':'Head Line', data.head_line)}
-    ${renderLine('dot-life', currentLang==='ur'?'Life Line — لکیرِ حیات':'Life Line', data.life_line)}
-    ${renderLine('dot-fate', currentLang==='ur'?'Fate Line — لکیرِ مقدر':'Fate Line', data.fate_line)}
-  </div>`;
+  if(show.lines){
+    // For a focused topic, only show the specific line(s) relevant to it
+    const lineFilter = {
+      full: ['heart','head','life','fate'],
+      marriage: ['heart'],
+      health: ['life','head'],
+      fate: ['fate','head']
+    };
+    const linesToShow = lineFilter[topic] || ['heart','head','life','fate'];
+    let linesHtml = '';
+    if(linesToShow.includes('heart')) linesHtml += renderLine('dot-heart', currentLang==='ur'?'Heart Line — لکیرِ دل':'Heart Line', data.heart_line);
+    if(linesToShow.includes('head')) linesHtml += renderLine('dot-head', currentLang==='ur'?'Head Line — لکیرِ دماغ':'Head Line', data.head_line);
+    if(linesToShow.includes('life')) linesHtml += renderLine('dot-life', currentLang==='ur'?'Life Line — لکیرِ حیات':'Life Line', data.life_line);
+    if(linesToShow.includes('fate')) linesHtml += renderLine('dot-fate', currentLang==='ur'?'Fate Line — لکیرِ مقدر':'Fate Line', data.fate_line);
+    html += `<div class="panel"><h2>🔮 <span>${t('resultTitleLines')}</span></h2>${linesHtml}</div>`;
+  }
 
-  html += cardSimple('〰️', t('resultTitleSecondary'), renderSecondary(data.secondary_lines));
-  html += cardSimple('⛰️', t('resultTitleMounts'), renderMounts(data.mounts));
-  html += cardSimple('✳️', t('resultTitleMarks'), renderMarks(data.special_marks));
-  html += cardSimple('💍', t('resultTitleMarriage'), renderKV(data.marriage, ['lines_count','description','shape','forks_breaks'],
+  if(show.secondary) html += cardSimple('〰️', t('resultTitleSecondary'), renderSecondary(data.secondary_lines));
+  if(show.mounts) html += cardSimple('⛰️', t('resultTitleMounts'), renderMounts(data.mounts));
+  if(show.marks) html += cardSimple('✳️', t('resultTitleMarks'), renderMarks(data.special_marks));
+  if(show.marriage) html += cardSimple('💍', t('resultTitleMarriage'), renderKV(data.marriage, ['lines_count','description','shape','forks_breaks'],
     {lines_count:'lLength',description:'lInterp',shape:'lShape',forks_breaks:'lForks'}));
-  html += cardSimple('👶', t('resultTitleChildren'), renderChildren(data.children));
-  html += cardSimple('🌟', t('resultTitlePersonality'), renderFreeText(data.personality));
-  html += cardSimple('💼', t('resultTitleCareer'), renderFreeText(data.career));
-  html += cardSimple('❤️', t('resultTitleRelationships'), renderFreeText(data.relationships));
-  html += cardSimple('💰', t('resultTitleWealth'), renderFreeText(data.wealth));
+  if(show.children) html += cardSimple('👶', t('resultTitleChildren'), renderChildren(data.children));
+  if(show.personality) html += cardSimple('🌟', t('resultTitlePersonality'), renderFreeText(data.personality));
+  if(show.career) html += cardSimple('💼', t('resultTitleCareer'), renderFreeText(data.career));
+  if(show.relationships) html += cardSimple('❤️', t('resultTitleRelationships'), renderFreeText(data.relationships));
+  if(show.wealth) html += cardSimple('💰', t('resultTitleWealth'), renderFreeText(data.wealth));
 
   html += `<div class="panel disclaimer-box">
     ${escapeHtml(data.disclaimer || defaultDisclaimer())}
