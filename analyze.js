@@ -124,10 +124,6 @@ module.exports = async function handler(req, res) {
       return res.status(502).json({ error: "Could not parse the analysis result. Please try again." });
     }
 
-    if (!parsed.annotation_confidence || ["none", "low"].includes(String(parsed.annotation_confidence).toLowerCase())) {
-      parsed.annotation_confidence = parsed.annotation_confidence || "none";
-    }
-
     return res.status(200).json(parsed);
   } catch (err) {
     console.error("Unhandled error in /api/analyze:", err);
@@ -155,7 +151,7 @@ async function safeText(resp) {
 function buildSystemPrompt(lang, hand, focusTopic) {
   const langInstruction =
     lang === "ur"
-      ? `Write EVERY human-readable text value in the JSON in clear, natural Urdu — with NO exceptions. This includes not just long interpretation/description/meaning fields, but also every short value such as: start, end, length, depth, shape, breaks, branches, forks, islands, crosses, chains, relation_to_other_lines, level, thickness, spacing, location, type, status, message. For example, instead of "None" write "موجود نہیں", instead of "Straight" write "سیدھی", instead of "Curved" write "خم دار", instead of "Slightly Curved" write "قدرے خم دار", instead of "Present" write "موجود", instead of "Few" write "چند", instead of "Joined with Life Line" write "لائف لائن کے ساتھ ملی ہوئی", instead of "Between Thumb and Index Finger" write "انگوٹھے اور شہادت کی انگلی کے درمیان", instead of "Near Wrist" write "کلائی کے قریب", instead of "Long" write "لمبی", instead of "Deep" write "گہری", instead of "Under Ring Finger" write "انگوٹھی والی انگلی کے نیچے", instead of "Not clearly visible" write "تصویر میں واضح طور پر نظر نہیں آ رہی". The ONLY things that should remain in English/Latin script are: the JSON keys themselves (e.g. "heart_line", "confidence"), the confidence enum values which must stay exactly "High"/"Medium"/"Low"/"Not visible", the image_quality.status value ("good"/"poor"), the annotation_confidence value ("high"/"low"/"none"), the hand_type.type value (keep as "Earth Hand"/"Fire Hand"/"Air Hand"/"Water Hand"/"Mixed Type"), the mounts level value ("low"/"normal"/"developed"/"prominent"), and the special_marks.type value (keep as "Star"/"Cross"/"Triangle"/etc). Every other piece of text must be Urdu.
+      ? `Write EVERY human-readable text value in the JSON in clear, natural Urdu — with NO exceptions. This includes not just long interpretation/description/meaning fields, but also every short value such as: start, end, length, depth, shape, breaks, branches, forks, islands, crosses, chains, relation_to_other_lines, level, thickness, spacing, location, type, status, message. For example, instead of "None" write "موجود نہیں", instead of "Straight" write "سیدھی", instead of "Curved" write "خم دار", instead of "Slightly Curved" write "قدرے خم دار", instead of "Present" write "موجود", instead of "Few" write "چند", instead of "Joined with Life Line" write "لائف لائن کے ساتھ ملی ہوئی", instead of "Between Thumb and Index Finger" write "انگوٹھے اور شہادت کی انگلی کے درمیان", instead of "Near Wrist" write "کلائی کے قریب", instead of "Long" write "لمبی", instead of "Deep" write "گہری", instead of "Under Ring Finger" write "انگوٹھی والی انگلی کے نیچے", instead of "Not clearly visible" write "تصویر میں واضح طور پر نظر نہیں آ رہی". The ONLY things that should remain in English/Latin script are: the JSON keys themselves (e.g. "heart_line", "confidence"), the confidence enum values which must stay exactly "High"/"Medium"/"Low"/"Not visible", the image_quality.status value ("good"/"poor"), the hand_type.type value (keep as "Earth Hand"/"Fire Hand"/"Air Hand"/"Water Hand"/"Mixed Type"), the mounts level value ("low"/"normal"/"developed"/"prominent"), and the special_marks.type value (keep as "Star"/"Cross"/"Triangle"/etc). Every other piece of text must be Urdu.
 
 MANDATORY FINAL SELF-CHECK (do this before you output anything): once you have drafted the JSON in your head, re-scan every single value you are about to write. If any value — however short — contains an English word or phrase that is not one of the specific enum values listed above, rewrite that value in Urdu before including it in your response. Do not submit a value like "Not clearly visible", "Between Thumb and Index Finger", "Slightly Curved", or any similar English phrase; every one of those must be Urdu text instead.
 
@@ -209,10 +205,6 @@ Assess whether the palm is fully visible, in focus, reasonably lit, not cropped 
 NO HALLUCINATION — CONFIDENCE IS MANDATORY:
 For every observation, include a "confidence" value: one of "High", "Medium", "Low", or "Not visible" (these four enum values stay in English exactly as written, even when the rest of the content is in Urdu). If a feature is not clearly visible in the photo, do NOT invent it — say so explicitly with confidence "Not visible".
 
-ANNOTATION COORDINATES — TRACE THE ACTUAL CREASE, POINT BY POINT:
-For each of the four major lines (heart_line, head_line, life_line, fate_line) that you can genuinely see, trace it the way you would trace a road on a map: look at where the crease actually sits in the image at several points along its length, and record a "points" array of 8-14 normalized coordinate objects {"x":0-1,"y":0-1} (x = fraction of image width from the left edge, y = fraction of image height from the top edge), ordered from the line's start to its end, each point sitting directly ON the visible crease pixel at that stage — not a smooth guess, not a straight approximation, and not offset from the real crease. Follow every bend, dip, and curve the actual line makes; a line with a curve needs more points placed along that curve, not a straight segment cutting across it. Double-check each point mentally against the image before including it: does this (x,y) genuinely sit on top of the crease in the photo, or is it just an approximate position nearby? Only include a line's points if you are genuinely confident they trace the real crease closely — a rough guess is worse than omitting the points entirely. Do the same single "point":{"x":..,"y":..} for each mount and special mark you report, placed exactly at that feature's real location in the image.
-Set "annotation_confidence" to "high" only if you traced the visible creases closely and carefully for at least the main lines; otherwise set it to "low" or "none". When low/none, omit points/point fields throughout — never provide rough/approximate points just to have something to draw, since a wrongly-placed line is worse than no line. Default to "low"/"none" whenever you are not fully certain — it is far better to show no drawn line than a line that does not sit on the real crease.
-
 OUTPUT FORMAT:
 Respond with ONLY a single JSON object (no markdown fences, no commentary) matching this exact shape:
 
@@ -227,10 +219,10 @@ Respond with ONLY a single JSON object (no markdown fences, no commentary) match
     "little": { "length":"", "thickness":"", "shape":"", "spacing":"", "meaning":"", "confidence":"" }
   },
   "thumb": { "length":"", "width":"", "flexibility":"", "upper_phalanx":"", "lower_phalanx":"", "meaning":"", "confidence":"" },
-  "heart_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "points":[{"x":0.0,"y":0.0}] },
-  "head_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "points":[{"x":0.0,"y":0.0}] },
-  "life_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "points":[{"x":0.0,"y":0.0}] },
-  "fate_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "points":[{"x":0.0,"y":0.0}] },
+  "heart_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
+  "head_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
+  "life_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
+  "fate_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
   "secondary_lines": {
     "sun_line": { "description":"", "confidence":"" },
     "health_line": { "description":"", "confidence":"" },
@@ -240,24 +232,23 @@ Respond with ONLY a single JSON object (no markdown fences, no commentary) match
     "bracelets": { "description":"", "confidence":"" }
   },
   "mounts": {
-    "jupiter": { "level":"low|normal|developed|prominent", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "saturn": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "apollo": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "mercury": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "venus": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "moon": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "upper_mars": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "lower_mars": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} },
-    "plain_of_mars": { "level":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} }
+    "jupiter": { "level":"low|normal|developed|prominent", "meaning":"", "confidence":"" },
+    "saturn": { "level":"", "meaning":"", "confidence":"" },
+    "apollo": { "level":"", "meaning":"", "confidence":"" },
+    "mercury": { "level":"", "meaning":"", "confidence":"" },
+    "venus": { "level":"", "meaning":"", "confidence":"" },
+    "moon": { "level":"", "meaning":"", "confidence":"" },
+    "upper_mars": { "level":"", "meaning":"", "confidence":"" },
+    "lower_mars": { "level":"", "meaning":"", "confidence":"" },
+    "plain_of_mars": { "level":"", "meaning":"", "confidence":"" }
   },
-  "special_marks": [ { "type":"Star|Cross|Triangle|Square|Island|Circle|Trident|Fork|Grille|Vertical line|Horizontal line", "location":"", "meaning":"", "confidence":"", "point":{"x":0.0,"y":0.0} } ],
+  "special_marks": [ { "type":"Star|Cross|Triangle|Square|Island|Circle|Trident|Fork|Grille|Vertical line|Horizontal line", "location":"", "meaning":"", "confidence":"" } ],
   "marriage": { "lines_count":"", "description":"", "shape":"", "forks_breaks":"", "confidence":"" },
   "children": { "interpretation":"", "disclaimer":"" },
   "personality": { "confidence_trait":"", "communication":"", "emotional_style":"", "decision_making":"", "creativity":"", "leadership":"" },
   "career": { "tendencies":"", "leadership":"", "business_tendency":"", "communication_work":"", "creative_work":"", "stability_vs_change":"" },
   "relationships": { "emotional_nature":"", "attachment_style":"", "communication":"", "tendencies":"" },
   "wealth": { "financial_tendencies":"", "stability":"", "risk_taking":"", "business_inclination":"" },
-  "annotation_confidence": "high|low|none",
   "disclaimer": ""
 }
 

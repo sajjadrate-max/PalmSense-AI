@@ -247,12 +247,6 @@
 
   .privacy-note{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
 
-  .legend-box{
-    display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;
-    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
-  }
-  .legend-item{font-size:12.5px;color:var(--ink-dim);display:inline-flex;align-items:center;}
-
   .hidden{display:none !important;}
 
   .tabbar{display:flex;gap:8px;margin:22px auto 12px;max-width:920px;padding:0 18px;}
@@ -562,8 +556,8 @@ const I18N = {
     resultTitleMarks:"خاص نشانات", resultTitleMarriage:"شادی سے متعلق",
     resultTitleChildren:"اولاد سے متعلق", resultTitlePersonality:"مجموعی شخصیت",
     resultTitleCareer:"کیریئر / کاروبار", resultTitleRelationships:"محبت / تعلقات",
-    resultTitleWealth:"مالی معاملات", resultTitleAnnotated:"نشان زدہ تصویر",
-    notVisible:"واضح نہیں", annotationLowNote:"تصویر پر نشانات لگانے کے لیے اعتماد کم ہے، اس لیے صرف تحریری نتیجہ دکھایا جا رہا ہے۔",
+    resultTitleWealth:"مالی معاملات", resultTitleAnnotated:"آپ کی تصویر",
+    notVisible:"واضح نہیں",
     fThumb:"انگوٹھا", fIndex:"شہادت (Jupiter)", fMiddle:"درمیانی (Saturn)", fRing:"انگوٹھی والی (Apollo)", fLittle:"چھنگلیا (Mercury)",
     lStart:"آغاز", lEnd:"اختتام", lLength:"لمبائی", lDepth:"گہرائی/وضاحت", lShape:"شکل",
     lBreaks:"ٹوٹ (Breaks)", lBranches:"شاخیں", lForks:"دوہرا سرا (Forks)", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
@@ -605,8 +599,8 @@ const I18N = {
     resultTitleMarks:"Special Marks", resultTitleMarriage:"Marriage",
     resultTitleChildren:"Children", resultTitlePersonality:"Overall Personality",
     resultTitleCareer:"Career / Business", resultTitleRelationships:"Love / Relationships",
-    resultTitleWealth:"Money / Wealth", resultTitleAnnotated:"Annotated Image",
-    notVisible:"Not visible", annotationLowNote:"Confidence for marking the image is low, so only the written result is shown.",
+    resultTitleWealth:"Money / Wealth", resultTitleAnnotated:"Your Photo",
+    notVisible:"Not visible",
     fThumb:"Thumb", fIndex:"Index (Jupiter)", fMiddle:"Middle (Saturn)", fRing:"Ring (Apollo)", fLittle:"Little (Mercury)",
     lStart:"Start", lEnd:"End", lLength:"Length", lDepth:"Depth/Clarity", lShape:"Shape",
     lBreaks:"Breaks", lBranches:"Branches", lForks:"Forks", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
@@ -896,15 +890,12 @@ function renderResults(data){
     return;
   }
 
-  // Annotated image
-  const annDrawn = !(!data.annotation_confidence || data.annotation_confidence==='none' || data.annotation_confidence==='low');
+  // Uploaded image (shown plain — no drawn annotations; see explanation)
   html += `<div class="panel">
     <h2>🖼️ <span>${t('resultTitleAnnotated')}</span></h2>
     <div class="preview-wrap" id="resultImgWrap">
       <img id="resultImg" src="${uploadedBase64}">
-      <canvas id="resultCanvas"></canvas>
     </div>
-    ${!annDrawn ? `<p class="privacy-note" style="margin-top:10px;">${t('annotationLowNote')}</p>` : renderLegend(data)}
   </div>`;
 
   // Which sections to show, based on the topic the user picked
@@ -979,29 +970,6 @@ function renderResults(data){
 
   box.innerHTML = html;
   box.scrollIntoView({behavior:'smooth'});
-
-  // draw annotations after image loads
-  const img = document.getElementById('resultImg');
-  const drawFn = ()=>drawAnnotations(data);
-  if(img.complete) drawFn(); else img.onload = drawFn;
-}
-
-function renderLegend(data){
-  const items = [
-    ['heart_line', 'dot-heart', currentLang==='ur' ? 'سرخ = دل کی لکیر (Heart Line)' : 'Red = Heart Line'],
-    ['head_line', 'dot-head', currentLang==='ur' ? 'نیلا = دماغ کی لکیر (Head Line)' : 'Blue = Head Line'],
-    ['life_line', 'dot-life', currentLang==='ur' ? 'سبز = حیات کی لکیر (Life Line)' : 'Green = Life Line'],
-    ['fate_line', 'dot-fate', currentLang==='ur' ? 'پیلا = مقدر کی لکیر (Fate Line)' : 'Yellow = Fate Line']
-  ];
-  let out = '';
-  items.forEach(function(item){
-    const line = data[item[0]];
-    if(line && Array.isArray(line.points) && line.points.length>=2){
-      out += `<span class="legend-item"><span class="line-dot ${item[1]}"></span>${item[2]}</span>`;
-    }
-  });
-  if(!out) return '';
-  return `<div class="legend-box">${out}</div>`;
 }
 
 function cardSimple(icon, title, innerHtml){
@@ -1148,67 +1116,6 @@ function defaultDisclaimer(){
   return currentLang==='ur'
     ? "یہ reading روایتی پامسٹری کی تشریحات پر مبنی ہے۔ پامسٹری سائنسی طور پر مستقبل کی پیش گوئی، بیماری کی تشخیص، fertility، اولاد کی تعداد یا جنس، موت کی عمر یا مالی کامیابی کی ضمانت دینے کا ثابت شدہ طریقہ نہیں ہے۔ اسے صرف روایتی/تفریحی interpretation سمجھیں۔"
     : "This reading is based on traditional palmistry interpretations. Palmistry is not a scientifically proven method for predicting the future, diagnosing illness, fertility, the number or gender of children, age of death, or guaranteed financial success. Please treat it as traditional / entertainment interpretation only.";
-}
-
-/* ============================================================
-   CANVAS ANNOTATIONS
-   ============================================================ */
-function drawAnnotations(data){
-  const conf = data.annotation_confidence;
-  if(!conf || conf === 'none' || conf === 'low') return; // do not draw fake lines
-
-  const img = document.getElementById('resultImg');
-  const canvas = document.getElementById('resultCanvas');
-  if(!img || !canvas) return;
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  const W = canvas.width, H = canvas.height;
-  const colorMap = { heart_line:'#e05c52', head_line:'#4f8fd9', life_line:'#4fbf5e', fate_line:'#e0c341' };
-
-  ['heart_line','head_line','life_line','fate_line'].forEach(key=>{
-    const line = data[key];
-    if(line && Array.isArray(line.points) && line.points.length>=2){
-      ctx.beginPath();
-      ctx.lineWidth = Math.max(2, W*0.006);
-      ctx.strokeStyle = colorMap[key];
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      line.points.forEach((p,i)=>{
-        const x = p.x*W, y = p.y*H;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      });
-      ctx.stroke();
-    }
-  });
-
-  if(data.mounts){
-    Object.keys(data.mounts).forEach(key=>{
-      const mo = data.mounts[key];
-      if(mo && mo.point && typeof mo.point.x==='number'){
-        const x = mo.point.x*W, y = mo.point.y*H;
-        ctx.beginPath();
-        ctx.arc(x,y,Math.max(4,W*0.012),0,2*Math.PI);
-        ctx.strokeStyle = '#c9a769';
-        ctx.lineWidth = Math.max(1.5,W*0.003);
-        ctx.stroke();
-      }
-    });
-  }
-
-  if(Array.isArray(data.special_marks)){
-    data.special_marks.forEach(mk=>{
-      if(mk.point && typeof mk.point.x==='number'){
-        const x = mk.point.x*W, y = mk.point.y*H;
-        ctx.beginPath();
-        ctx.arc(x,y,Math.max(3,W*0.008),0,2*Math.PI);
-        ctx.fillStyle = 'rgba(224,122,107,0.85)';
-        ctx.fill();
-      }
-    });
-  }
 }
 
 /* ============================================================
