@@ -567,9 +567,10 @@ function selectHand(h){
 }
 
 /* ============================================================
-   IMAGE UPLOAD
+   IMAGE UPLOAD (with client-side compression to stay under
+   the platform's request-size limit for the /api/analyze call)
    ============================================================ */
-let uploadedBase64 = null; // full data URL
+let uploadedBase64 = null; // full data URL (JPEG, resized)
 let uploadedMime = null;
 
 function handleFile(evt){
@@ -579,18 +580,58 @@ function handleFile(evt){
     showError(t('errBadImage'));
     return;
   }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    uploadedBase64 = e.target.result;
-    uploadedMime = file.type;
+  compressImage(file, 1600, 0.8).then(function(dataUrl){
+    uploadedBase64 = dataUrl;
+    uploadedMime = 'image/jpeg';
     document.getElementById('previewImg').src = uploadedBase64;
     document.getElementById('uploadZoneBox').classList.add('hidden');
     document.getElementById('previewBox').classList.remove('hidden');
     document.getElementById('analyzeBtn').disabled = false;
     clearError();
     hideResults();
-  };
-  reader.readAsDataURL(file);
+  }).catch(function(err){
+    console.error('Image compression error:', err);
+    showError(t('errBadImage'));
+  });
+}
+
+/**
+ * Resizes an image file down to a maximum width/height (preserving
+ * aspect ratio) and re-encodes it as JPEG at the given quality,
+ * returning a data URL. This keeps the base64 payload sent to the
+ * backend well under the platform's request size limit, since raw
+ * phone-camera photos (often 4000px+, several MB) would otherwise
+ * be rejected before the analysis ever runs.
+ */
+function compressImage(file, maxDimension, quality){
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        let w = img.width, h = img.height;
+        if(w > maxDimension || h > maxDimension){
+          if(w > h){
+            h = Math.round(h * (maxDimension / w));
+            w = maxDimension;
+          }else{
+            w = Math.round(w * (maxDimension / h));
+            h = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function resetImage(){
