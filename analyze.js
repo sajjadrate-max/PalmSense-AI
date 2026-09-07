@@ -42,7 +42,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "Invalid hand value. Expected 'right' or 'left'." });
     }
     const lang = language === "en" ? "en" : "ur";
-    const VALID_TOPICS = ["full", "marriage", "health", "fate", "wealth", "personality"];
+    const VALID_TOPICS = ["full", "marriage", "health", "fate", "wealth", "personality", "travel", "children", "handFingers", "marks", "mounts"];
     const focusTopic = VALID_TOPICS.includes(topic) ? topic : "full";
 
     const approxBytes = Math.ceil((image.length * 3) / 4);
@@ -166,6 +166,11 @@ CRITICAL — SIMPLE, EXPLAINED LANGUAGE FOR ALL INTERPRETATION/MEANING FIELDS: E
     fate: "قسمت اور کیریئر (Fate Line، Head Line، career)",
     wealth: "مالی معاملات (wealth)",
     personality: "مجموعی شخصیت (personality، hand_type)",
+    travel: "سفر کا روایتی رجحان (secondary_lines.travel_lines)",
+    children: "اولاد سے متعلق روایتی تشریح (children)",
+    handFingers: "ہاتھ کی قسم اور انگلیوں/انگوٹھے کی ساخت (hand_type، fingers، thumb)",
+    marks: "خاص نشانات (special_marks)",
+    mounts: "Mounts/ابھار (mounts)",
   };
   const TOPIC_LABELS_EN = {
     marriage: "marriage and love (heart_line, marriage_lines, relationships)",
@@ -173,6 +178,11 @@ CRITICAL — SIMPLE, EXPLAINED LANGUAGE FOR ALL INTERPRETATION/MEANING FIELDS: E
     fate: "fate and career (fate_line, head_line, career)",
     wealth: "money and wealth (wealth)",
     personality: "overall personality (personality, hand_type)",
+    travel: "traditional travel tendency (secondary_lines.travel_lines)",
+    children: "traditional interpretation about children (children)",
+    handFingers: "hand shape and fingers/thumb structure (hand_type, fingers, thumb)",
+    marks: "special marks (special_marks)",
+    mounts: "mounts (mounts)",
   };
   const focusInstruction =
     focusTopic && focusTopic !== "full"
@@ -197,9 +207,9 @@ Assess whether the palm is fully visible, in focus, reasonably lit, not cropped 
 NO HALLUCINATION — CONFIDENCE IS MANDATORY:
 For every observation, include a "confidence" value: one of "High", "Medium", "Low", or "Not visible" (these four enum values stay in English exactly as written, even when the rest of the content is in Urdu). If a feature is not clearly visible in the photo, do NOT invent it — say so explicitly with confidence "Not visible".
 
-ANNOTATION COORDINATES:
-For the four major lines (heart_line, head_line, life_line, fate_line), if you can trace them with real confidence, provide a "points" array of 4-8 normalized coordinate objects {"x":0-1,"y":0-1}. Do the same "point":{"x":..,"y":..} for each mount and special mark. If not confident, omit points/point fields entirely.
-Set "annotation_confidence" to "high" only if genuinely confident; otherwise "low" or "none". When low/none, omit points/point fields throughout.
+ANNOTATION COORDINATES — TRACE THE ACTUAL CREASE, POINT BY POINT:
+For each of the four major lines (heart_line, head_line, life_line, fate_line) that you can genuinely see, trace it the way you would trace a road on a map: look at where the crease actually sits in the image at several points along its length, and record a "points" array of 8-14 normalized coordinate objects {"x":0-1,"y":0-1} (x = fraction of image width from the left edge, y = fraction of image height from the top edge), ordered from the line's start to its end, each point sitting directly ON the visible crease pixel at that stage — not a smooth guess, not a straight approximation, and not offset from the real crease. Follow every bend, dip, and curve the actual line makes; a line with a curve needs more points placed along that curve, not a straight segment cutting across it. Double-check each point mentally against the image before including it: does this (x,y) genuinely sit on top of the crease in the photo, or is it just an approximate position nearby? Only include a line's points if you are genuinely confident they trace the real crease closely — a rough guess is worse than omitting the points entirely. Do the same single "point":{"x":..,"y":..} for each mount and special mark you report, placed exactly at that feature's real location in the image.
+Set "annotation_confidence" to "high" only if you traced the visible creases closely and carefully for at least the main lines; otherwise set it to "low" or "none". When low/none, omit points/point fields throughout — never provide rough/approximate points just to have something to draw, since a wrongly-placed line is worse than no line.
 
 OUTPUT FORMAT:
 Respond with ONLY a single JSON object (no markdown fences, no commentary) matching this exact shape:

@@ -106,6 +106,14 @@
     width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);
     color:var(--gold-bright);font-size:13px;font-family:'Inter',sans-serif;flex-shrink:0;
   }
+  .collapsible-head{cursor:pointer;justify-content:flex-start;}
+  .collapsible-head .topic-current{
+    margin-inline-start:auto;font-size:13px;color:var(--gold);
+    font-family:'Inter',sans-serif;font-weight:400;
+  }
+  .collapsible-head .triangle{
+    color:var(--gold-bright);font-size:12px;transition:transform .15s;flex-shrink:0;
+  }
 
   /* STEP: topic select */
   .topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -239,6 +247,12 @@
 
   .privacy-note{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
 
+  .legend-box{
+    display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  }
+  .legend-item{font-size:12.5px;color:var(--ink-dim);display:inline-flex;align-items:center;}
+
   .hidden{display:none !important;}
 
   .tabbar{display:flex;gap:8px;margin:22px auto 12px;max-width:920px;padding:0 18px;}
@@ -279,7 +293,12 @@
   <div id="viewReading">
 
     <div class="panel" id="stepTopic">
-      <h2><span class="num">1</span><span data-i="step1Title">آپ کیا جاننا چاہتے ہیں؟</span></h2>
+      <h2 class="collapsible-head" onclick="toggleTopicGrid()">
+        <span class="num">1</span><span data-i="step1Title">آپ کیا جاننا چاہتے ہیں؟</span>
+        <span class="topic-current" id="topicCurrentLbl">مکمل تجزیہ</span>
+        <span class="triangle" id="topicTriangle">▶</span>
+      </h2>
+      <div id="topicGridWrap" class="hidden">
       <div class="topic-grid">
         <div class="topic-opt selected" id="topicFull" onclick="selectTopic('full')">
           <span class="t-emoji">📖</span>
@@ -305,8 +324,29 @@
           <span class="t-emoji">🌟</span>
           <span class="t-lbl" data-i="topicPersonality">شخصیت</span>
         </div>
+        <div class="topic-opt" id="topicTravel" onclick="selectTopic('travel')">
+          <span class="t-emoji">✈️</span>
+          <span class="t-lbl" data-i="topicTravel">سفر</span>
+        </div>
+        <div class="topic-opt" id="topicChildren" onclick="selectTopic('children')">
+          <span class="t-emoji">👶</span>
+          <span class="t-lbl" data-i="topicChildren">اولاد</span>
+        </div>
+        <div class="topic-opt" id="topicHandFingers" onclick="selectTopic('handFingers')">
+          <span class="t-emoji">✋</span>
+          <span class="t-lbl" data-i="topicHandFingers">ہاتھ اور انگلیوں کی ساخت</span>
+        </div>
+        <div class="topic-opt" id="topicMarks" onclick="selectTopic('marks')">
+          <span class="t-emoji">✳️</span>
+          <span class="t-lbl" data-i="topicMarks">خاص نشانات</span>
+        </div>
+        <div class="topic-opt" id="topicMounts" onclick="selectTopic('mounts')">
+          <span class="t-emoji">⛰️</span>
+          <span class="t-lbl" data-i="topicMounts">Mounts (ابھار)</span>
+        </div>
       </div>
       <p class="topic-note" data-i="topicNote">جو موضوع منتخب کریں گے، نتیجہ صرف اسی کے بارے میں تفصیل سے دکھایا جائے گا۔</p>
+      </div>
     </div>
 
     <div class="panel" id="stepHand">
@@ -494,6 +534,8 @@ const I18N = {
     step1Title:"آپ کیا جاننا چاہتے ہیں؟",
     topicFull:"مکمل تجزیہ", topicMarriage:"شادی / محبت", topicHealth:"صحت کا رجحان",
     topicFate:"قسمت / کیریئر", topicWealth:"مالی معاملات", topicPersonality:"شخصیت",
+    topicTravel:"سفر", topicChildren:"اولاد", topicHandFingers:"ہاتھ اور انگلیوں کی ساخت",
+    topicMarks:"خاص نشانات", topicMounts:"Mounts (ابھار)",
     topicNote:"جو موضوع منتخب کریں گے، نتیجہ صرف اسی کے بارے میں تفصیل سے دکھایا جائے گا۔",
     step2TitleHand:"ہاتھ منتخب کریں", rightHand:"دایاں ہاتھ", leftHand:"بایاں ہاتھ",
     step2Title:"ہتھیلی کی تصویر دیں",
@@ -535,6 +577,8 @@ const I18N = {
     step1Title:"What would you like to know?",
     topicFull:"Full Reading", topicMarriage:"Marriage / Love", topicHealth:"Health Tendency",
     topicFate:"Fate / Career", topicWealth:"Money / Wealth", topicPersonality:"Personality",
+    topicTravel:"Travel", topicChildren:"Children", topicHandFingers:"Hand & Finger Shape",
+    topicMarks:"Special Marks", topicMounts:"Mounts",
     topicNote:"Whichever topic you choose, the result will focus in detail only on that.",
     step2TitleHand:"Select Your Hand", rightHand:"Right Hand", leftHand:"Left Hand",
     step2Title:"Provide a Palm Photo",
@@ -582,6 +626,11 @@ function setLang(l){
     const key = el.getAttribute('data-i');
     if(I18N[l][key]) el.innerHTML = I18N[l][key];
   });
+  const curLbl = document.getElementById('topicCurrentLbl');
+  if(curLbl && typeof selectedTopic !== 'undefined'){
+    const key = 'topic' + selectedTopic.charAt(0).toUpperCase() + selectedTopic.slice(1);
+    if(I18N[l][key]) curLbl.textContent = I18N[l][key];
+  }
 }
 
 function t(key){ return I18N[currentLang][key] || key; }
@@ -600,13 +649,26 @@ function showTab(name){
    TOPIC SELECT
    ============================================================ */
 let selectedTopic = 'full';
-const TOPIC_IDS = ['full','marriage','health','fate','wealth','personality'];
+const TOPIC_IDS = ['full','marriage','health','fate','wealth','personality','travel','children','handFingers','marks','mounts'];
+
+function toggleTopicGrid(){
+  const wrap = document.getElementById('topicGridWrap');
+  const tri = document.getElementById('topicTriangle');
+  const isHidden = wrap.classList.contains('hidden');
+  wrap.classList.toggle('hidden', !isHidden);
+  tri.textContent = isHidden ? '▼' : '▶';
+}
+
 function selectTopic(topic){
   selectedTopic = topic;
   TOPIC_IDS.forEach(function(id){
     const el = document.getElementById('topic' + id.charAt(0).toUpperCase() + id.slice(1));
     if(el) el.classList.toggle('selected', id===topic);
   });
+  document.getElementById('topicCurrentLbl').textContent = t('topic' + topic.charAt(0).toUpperCase() + topic.slice(1));
+  // collapse the grid back after a choice is made
+  document.getElementById('topicGridWrap').classList.add('hidden');
+  document.getElementById('topicTriangle').textContent = '▶';
 }
 
 /* ============================================================
@@ -801,28 +863,28 @@ function renderResults(data){
   }
 
   // Annotated image
+  const annDrawn = !(!data.annotation_confidence || data.annotation_confidence==='none' || data.annotation_confidence==='low');
   html += `<div class="panel">
     <h2>🖼️ <span>${t('resultTitleAnnotated')}</span></h2>
     <div class="preview-wrap" id="resultImgWrap">
       <img id="resultImg" src="${uploadedBase64}">
       <canvas id="resultCanvas"></canvas>
     </div>
-    ${(!data.annotation_confidence || data.annotation_confidence==='none' || data.annotation_confidence==='low')
-      ? `<p class="privacy-note" style="margin-top:10px;">${t('annotationLowNote')}</p>` : ''}
+    ${!annDrawn ? `<p class="privacy-note" style="margin-top:10px;">${t('annotationLowNote')}</p>` : renderLegend(data)}
   </div>`;
 
   // Which sections to show, based on the topic the user picked
   const topic = selectedTopic || 'full';
   const show = {
-    handType: topic==='full' || topic==='personality',
-    fingers: topic==='full',
-    thumb: topic==='full',
+    handType: topic==='full' || topic==='personality' || topic==='handFingers',
+    fingers: topic==='full' || topic==='handFingers',
+    thumb: topic==='full' || topic==='handFingers',
     lines: topic==='full' || topic==='marriage' || topic==='health' || topic==='fate',
-    secondary: topic==='full' || topic==='marriage' || topic==='health',
-    mounts: topic==='full',
-    marks: topic==='full',
+    secondary: topic==='full' || topic==='marriage' || topic==='health' || topic==='travel',
+    mounts: topic==='full' || topic==='mounts',
+    marks: topic==='full' || topic==='marks',
     marriage: topic==='full' || topic==='marriage',
-    children: topic==='full' || topic==='marriage',
+    children: topic==='full' || topic==='marriage' || topic==='children',
     personality: topic==='full' || topic==='personality',
     career: topic==='full' || topic==='fate' || topic==='wealth',
     relationships: topic==='full' || topic==='marriage' || topic==='personality',
@@ -880,6 +942,24 @@ function renderResults(data){
   const img = document.getElementById('resultImg');
   const drawFn = ()=>drawAnnotations(data);
   if(img.complete) drawFn(); else img.onload = drawFn;
+}
+
+function renderLegend(data){
+  const items = [
+    ['heart_line', 'dot-heart', currentLang==='ur' ? 'سرخ = دل کی لکیر (Heart Line)' : 'Red = Heart Line'],
+    ['head_line', 'dot-head', currentLang==='ur' ? 'نیلا = دماغ کی لکیر (Head Line)' : 'Blue = Head Line'],
+    ['life_line', 'dot-life', currentLang==='ur' ? 'سبز = حیات کی لکیر (Life Line)' : 'Green = Life Line'],
+    ['fate_line', 'dot-fate', currentLang==='ur' ? 'پیلا = مقدر کی لکیر (Fate Line)' : 'Yellow = Fate Line']
+  ];
+  let out = '';
+  items.forEach(function(item){
+    const line = data[item[0]];
+    if(line && Array.isArray(line.points) && line.points.length>=2){
+      out += `<span class="legend-item"><span class="line-dot ${item[1]}"></span>${item[2]}</span>`;
+    }
+  });
+  if(!out) return '';
+  return `<div class="legend-box">${out}</div>`;
 }
 
 function cardSimple(icon, title, innerHtml){
