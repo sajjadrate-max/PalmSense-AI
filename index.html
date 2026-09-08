@@ -230,6 +230,10 @@
     border-radius:12px;padding:16px;font-size:13.5px;color:#f0d9d3;line-height:1.9;
   }
 
+  .ref-diagram-wrap{text-align:center;margin-bottom:16px;}
+  .ref-diagram-svg{width:100%;max-width:280px;height:auto;margin:0 auto;display:block;}
+  .ref-diagram-note{font-size:12.5px;color:var(--muted);margin-top:10px;max-width:420px;margin-inline:auto;}
+
   details.learn{
     border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;
     background:rgba(255,255,255,0.015);
@@ -246,6 +250,12 @@
   }
 
   .privacy-note{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
+
+  .legend-box{
+    display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  }
+  .legend-item{font-size:12.5px;color:var(--ink-dim);display:inline-flex;align-items:center;}
 
   .hidden{display:none !important;}
 
@@ -410,6 +420,36 @@
     <div class="panel">
       <h2>🖐️ <span data-i="learnLinesTitle">اہم لکیریں</span></h2>
 
+      <div class="ref-diagram-wrap">
+        <svg viewBox="0 0 480 560" xmlns="http://www.w3.org/2000/svg" class="ref-diagram-svg">
+          <!-- Palm -->
+          <polygon points="150,340 330,340 350,540 130,540" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+          <!-- Fingers -->
+          <rect x="160" y="185" width="38" height="165" rx="18" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+          <rect x="208" y="150" width="38" height="200" rx="18" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+          <rect x="256" y="160" width="38" height="190" rx="18" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+          <rect x="304" y="190" width="34" height="160" rx="17" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+          <!-- Thumb -->
+          <rect x="75" y="300" width="75" height="70" rx="24" fill="none" stroke="#efe9da" stroke-width="2" opacity="0.6"/>
+
+          <!-- Heart Line -->
+          <path d="M160,365 C200,352 260,355 320,378" fill="none" stroke="#e05c52" stroke-width="5" stroke-linecap="round"/>
+          <!-- Head Line -->
+          <path d="M160,398 C215,412 275,428 315,442" fill="none" stroke="#4f8fd9" stroke-width="5" stroke-linecap="round"/>
+          <!-- Life Line -->
+          <path d="M160,365 C142,400 137,455 148,515" fill="none" stroke="#4fbf5e" stroke-width="5" stroke-linecap="round"/>
+          <!-- Fate Line -->
+          <path d="M240,520 C237,470 234,415 232,352" fill="none" stroke="#e0c341" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- Labels -->
+          <text x="330" y="382" fill="#e05c52" font-size="20" font-family="Noto Nastaliq Urdu" text-anchor="start">لکیرِ دل</text>
+          <text x="322" y="448" fill="#4f8fd9" font-size="20" font-family="Noto Nastaliq Urdu" text-anchor="start">لکیرِ دماغ</text>
+          <text x="80" y="535" fill="#4fbf5e" font-size="20" font-family="Noto Nastaliq Urdu" text-anchor="start">لکیرِ حیات</text>
+          <text x="195" y="552" fill="#e0c341" font-size="20" font-family="Noto Nastaliq Urdu" text-anchor="start">لکیرِ مقدر</text>
+        </svg>
+        <p class="ref-diagram-note" data-i="refDiagramNote">یہ ایک عمومی رہنما خاکہ ہے — ہر ہاتھ پر لکیریں تقریباً انہی جگہوں پر ہوتی ہیں، اسی لیے یہ آپ کے اپنے ہاتھ پر یہ لکیریں پہچاننے میں مدد دے گا۔</p>
+      </div>
+
       <details class="learn" open>
         <summary><span class="line-dot dot-heart"></span><span data-i="heartLineName">Heart Line — لکیرِ دل</span></summary>
         <p data-i="heartLineDesc">یہ لکیر ہتھیلی کے اوپری حصے میں، انگلیوں کے بالکل نیچے، چھنگلیا کی طرف سے شروع ہو کر شہادت کی انگلی کی طرف جاتی ہے۔ روایتی طور پر یہ جذبات، محبت اور تعلقات کی نوعیت ظاہر کرتی ہے۔</p>
@@ -558,6 +598,7 @@ const I18N = {
     resultTitleCareer:"کیریئر / کاروبار", resultTitleRelationships:"محبت / تعلقات",
     resultTitleWealth:"مالی معاملات", resultTitleAnnotated:"آپ کی تصویر",
     notVisible:"واضح نہیں",
+    dotsLowNote:"لکیروں کے شروع/اختتام کے نقطے لگانے کے لیے اعتماد کافی نہیں تھا، اس لیے صرف تحریری نتیجہ دکھایا جا رہا ہے۔",
     fThumb:"انگوٹھا", fIndex:"شہادت (Jupiter)", fMiddle:"درمیانی (Saturn)", fRing:"انگوٹھی والی (Apollo)", fLittle:"چھنگلیا (Mercury)",
     lStart:"آغاز", lEnd:"اختتام", lLength:"لمبائی", lDepth:"گہرائی/وضاحت", lShape:"شکل",
     lBreaks:"ٹوٹ (Breaks)", lBranches:"شاخیں", lForks:"دوہرا سرا (Forks)", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
@@ -601,6 +642,7 @@ const I18N = {
     resultTitleCareer:"Career / Business", resultTitleRelationships:"Love / Relationships",
     resultTitleWealth:"Money / Wealth", resultTitleAnnotated:"Your Photo",
     notVisible:"Not visible",
+    dotsLowNote:"Confidence for placing the line start/end markers wasn't high enough, so only the written result is shown.",
     fThumb:"Thumb", fIndex:"Index (Jupiter)", fMiddle:"Middle (Saturn)", fRing:"Ring (Apollo)", fLittle:"Little (Mercury)",
     lStart:"Start", lEnd:"End", lLength:"Length", lDepth:"Depth/Clarity", lShape:"Shape",
     lBreaks:"Breaks", lBranches:"Branches", lForks:"Forks", lIslands:"Islands", lCrosses:"Crosses", lChains:"Chains",
@@ -890,12 +932,14 @@ function renderResults(data){
     return;
   }
 
-  // Uploaded image (shown plain — no drawn annotations; see explanation)
+  // Uploaded image with optional start/end dot markers (no drawn lines)
   html += `<div class="panel">
     <h2>🖼️ <span>${t('resultTitleAnnotated')}</span></h2>
     <div class="preview-wrap" id="resultImgWrap">
       <img id="resultImg" src="${uploadedBase64}">
+      <canvas id="resultCanvas"></canvas>
     </div>
+    <div id="dotLegend"></div>
   </div>`;
 
   // Which sections to show, based on the topic the user picked
@@ -970,6 +1014,11 @@ function renderResults(data){
 
   box.innerHTML = html;
   box.scrollIntoView({behavior:'smooth'});
+
+  // draw start/end dot markers once the image has loaded
+  const img = document.getElementById('resultImg');
+  const drawFn = ()=>drawDotMarkers(data);
+  if(img.complete) drawFn(); else img.onload = drawFn;
 }
 
 function cardSimple(icon, title, innerHtml){
@@ -1110,6 +1159,64 @@ function renderFreeText(obj){
 
 function prettify(key){
   return key.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
+/* ============================================================
+   DOT MARKERS (start + end point only, never a full traced line)
+   ============================================================ */
+function drawDotMarkers(data){
+  const img = document.getElementById('resultImg');
+  const canvas = document.getElementById('resultCanvas');
+  if(!img || !canvas) return;
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const W = canvas.width, H = canvas.height;
+  const colorMap = { heart_line:'#e05c52', head_line:'#4f8fd9', life_line:'#4fbf5e', fate_line:'#e0c341' };
+  const nameKeys = { heart_line:'legendHeart', head_line:'legendHead', life_line:'legendLife', fate_line:'legendFate' };
+  const r = Math.max(6, W*0.016);
+  const usedLines = [];
+
+  ['heart_line','head_line','life_line','fate_line'].forEach(key=>{
+    const line = data[key];
+    if(line && line.start_point && line.end_point &&
+       typeof line.start_point.x === 'number' && typeof line.end_point.x === 'number'){
+      [line.start_point, line.end_point].forEach(p=>{
+        const x = p.x*W, y = p.y*H;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,2*Math.PI);
+        ctx.fillStyle = colorMap[key];
+        ctx.fill();
+        ctx.lineWidth = Math.max(2, W*0.003);
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+      });
+      usedLines.push(key);
+    }
+  });
+
+  // Build a small legend under the image for whichever lines actually got dots
+  const legendBox = document.getElementById('dotLegend');
+  if(legendBox){
+    if(usedLines.length === 0){
+      legendBox.innerHTML = `<p class="privacy-note" style="margin-top:10px;">${t('dotsLowNote')}</p>`;
+    } else {
+      let html = '<div class="legend-box">';
+      const dotClassMap = { heart_line:'dot-heart', head_line:'dot-head', life_line:'dot-life', fate_line:'dot-fate' };
+      const labelMap = {
+        heart_line: currentLang==='ur' ? 'دل کی لکیر' : 'Heart Line',
+        head_line: currentLang==='ur' ? 'دماغ کی لکیر' : 'Head Line',
+        life_line: currentLang==='ur' ? 'حیات کی لکیر' : 'Life Line',
+        fate_line: currentLang==='ur' ? 'مقدر کی لکیر' : 'Fate Line',
+      };
+      usedLines.forEach(key=>{
+        html += `<span class="legend-item"><span class="line-dot ${dotClassMap[key]}"></span>${labelMap[key]}</span>`;
+      });
+      html += '</div>';
+      legendBox.innerHTML = html;
+    }
+  }
 }
 
 function defaultDisclaimer(){
