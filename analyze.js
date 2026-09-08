@@ -205,6 +205,9 @@ Assess whether the palm is fully visible, in focus, reasonably lit, not cropped 
 NO HALLUCINATION — CONFIDENCE IS MANDATORY:
 For every observation, include a "confidence" value: one of "High", "Medium", "Low", or "Not visible" (these four enum values stay in English exactly as written, even when the rest of the content is in Urdu). If a feature is not clearly visible in the photo, do NOT invent it — say so explicitly with confidence "Not visible".
 
+START/END POINT MARKERS — TWO POINTS PER LINE, NOT A FULL TRACE:
+For each of the four major lines (heart_line, head_line, life_line, fate_line), identify only its two endpoints in the photo — where it visibly starts and where it visibly ends — NOT the path in between. This is a much simpler, more reliable task than tracing the whole line, so take real care to be accurate here. For each line, if you can clearly see both endpoints, add a "start_point":{"x":0-1,"y":0-1} and "end_point":{"x":0-1,"y":0-1} (normalized to image width/height, x left-to-right, y top-to-bottom) placed exactly on the crease at that endpoint — not a rough guess nearby. Double-check: does this (x,y) genuinely sit on the visible crease at its start/end, not just in the general area? Only include start_point/end_point for a line if you are genuinely confident about BOTH locations; if you are not confident about either one, omit both fields for that line entirely rather than guessing — a missing marker is far better than a wrongly-placed one.
+
 OUTPUT FORMAT:
 Respond with ONLY a single JSON object (no markdown fences, no commentary) matching this exact shape:
 
@@ -219,10 +222,10 @@ Respond with ONLY a single JSON object (no markdown fences, no commentary) match
     "little": { "length":"", "thickness":"", "shape":"", "spacing":"", "meaning":"", "confidence":"" }
   },
   "thumb": { "length":"", "width":"", "flexibility":"", "upper_phalanx":"", "lower_phalanx":"", "meaning":"", "confidence":"" },
-  "heart_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
-  "head_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
-  "life_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
-  "fate_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"" },
+  "heart_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "start_point":{"x":0.0,"y":0.0}, "end_point":{"x":0.0,"y":0.0} },
+  "head_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "start_point":{"x":0.0,"y":0.0}, "end_point":{"x":0.0,"y":0.0} },
+  "life_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "start_point":{"x":0.0,"y":0.0}, "end_point":{"x":0.0,"y":0.0} },
+  "fate_line": { "start":"", "end":"", "length":"", "depth":"", "shape":"", "breaks":"", "branches":"", "forks":"", "islands":"", "crosses":"", "chains":"", "relation_to_other_lines":"", "interpretation":"", "confidence":"", "start_point":{"x":0.0,"y":0.0}, "end_point":{"x":0.0,"y":0.0} },
   "secondary_lines": {
     "sun_line": { "description":"", "confidence":"" },
     "health_line": { "description":"", "confidence":"" },
